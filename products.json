@@ -1,0 +1,134 @@
+[
+    {
+        "name": "watch",
+        "price": "1154",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "s20",
+        "price": "34554",
+        "featured": true,
+        "company": "samsung"
+    },
+    {
+        "name": "rt4567",
+        "price": "34554",
+        "featured": false,
+        "company": "dell"
+    },
+    {
+        "name": "redmi12",
+        "price": "14554",
+        "featured": false,
+        "company": "mi"
+    },
+    {
+        "name": "MacBook Air",
+        "price": "999",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "AirPods Pro",
+        "price": "249",
+        "featured": false,
+        "company": "apple"
+    },
+    {
+        "name": "Galaxy Tab S7+",
+        "price": "849",
+        "featured": true,
+        "company": "samsung"
+    },
+    {
+        "name": "Galaxy Watch 4",
+        "price": "299",
+        "featured": false,
+        "company": "samsung"
+    },
+    {
+        "name": "XPS 13 Laptop",
+        "price": "1199",
+        "featured": false,
+        "company": "dell"
+    },
+    {
+        "name": "Alienware Aurora Gaming Desktop",
+        "price": "2149",
+        "featured": true,
+        "company": "dell"
+    },
+    {
+        "name": "Mi Band 6",
+        "price": "49.99",
+        "featured": true,
+        "company": "mi"
+    },
+    {
+        "name": "Mi Smart Scale 2",
+        "price": "29.99",
+        "featured": true,
+        "company": "mi"
+    },
+    {
+        "name": "iPad Pro",
+        "price": "799",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "Galaxy Buds Pro",
+        "price": "199",
+        "featured": true,
+        "company": "samsung"
+    },
+    {
+        "name": "Dell UltraSharp 27 4K Monitor",
+        "price": "499",
+        "featured": true,
+        "company": "dell"
+    },
+    {
+        "name": "Redmi Note 10 Pro",
+        "price": "279",
+        "featured": true,
+        "company": "mi"
+    },
+    {
+        "name": "iPhone",
+        "price": "799",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "iPhone 13+",
+        "price": "799",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "iPhone 15",
+        "price": "799",
+        "featured": true,
+        "company": "apple"
+    },
+    {
+        "name": "Galaxy Book Pro 360",
+        "price": "1299",
+        "featured": true,
+        "company": "samsung"
+    },
+    {
+        "name": "Dell Inspiron 15 3000 Laptop",
+        "price": "499",
+        "featured": true,
+        "company": "dell"
+    },
+    {
+        "name": "Redmi Note 11",
+        "price": "299",
+        "featured": true,
+        "company": "mi12"
+    }
+]
