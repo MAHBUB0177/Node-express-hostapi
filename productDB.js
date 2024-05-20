@@ -1,6 +1,7 @@
 require("dotenv").config()
 const connectDB= require('./db/connect')
  const Product =require('./models/product')
+ const User=require('./models/user')
  const ProductJson =require('./products.json')
 
  const start =async ()=>{
@@ -15,3 +16,16 @@ const connectDB= require('./db/connect')
  } 
 
  start()
+
+
+ const user =async ()=>{
+    try {
+        await connectDB(process.env.MONGODB_URI);
+        await User.create({email:'mahbub@email.com',name:'mahbub',password:'12345'})
+        console.log('success')
+    } catch (error) {
+        console.log(error);
+    }
+ } 
+
+ user()
