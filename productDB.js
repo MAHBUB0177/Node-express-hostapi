@@ -21,7 +21,7 @@ const connectDB= require('./db/connect')
  const user =async ()=>{
     try {
         await connectDB(process.env.MONGODB_URI);
-        await User.create({email:'mahbub@email.com',name:'mahbub',password:'12345'})
+        await User.create({email:'mahbub9283@email.com',name:'MahbubAlam',password:'1234599'})
         console.log('success')
     } catch (error) {
         console.log(error);
