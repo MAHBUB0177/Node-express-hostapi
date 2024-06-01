@@ -1,12 +1,15 @@
 const Product =require('../models/product')
 
 const getAllProducts=async(req,res)=>{
-    var id="66235417527a174ad295dca2"
-    const{company,name,featured,sort,select}=req.query;
-    console.log(company,name,sort,select,'+++++++++++')
+    // var id="66235417527a174ad295dca2"
+    const{company,name,featured,sort,select,_id}=req.query;
+    console.log(company,name,sort,select,_id,'+++++++++++')
     const queryObject={}
     if(company){
         queryObject.company=company
+    }
+    if(_id){
+        queryObject._id=_id
     }
     if(name){
         queryObject.name={$regex: name, $options: 'i'}
@@ -17,6 +20,7 @@ const getAllProducts=async(req,res)=>{
 
     let appData=Product.find(queryObject);
 //add sort functionality
+// http://localhost:500/api/products?name=iphone&sort=price
     if(sort){
         let sortFix= sort.replace(',', " ")
         appData=appData.sort(sortFix)
@@ -24,7 +28,7 @@ const getAllProducts=async(req,res)=>{
     }
 
 //add select functionality
-
+// http://localhost:500/api/products?name=iphone&select=company,featured
 if(select){
     let selectFix= select.replace(',', " ")
     appData=appData.select(selectFix)

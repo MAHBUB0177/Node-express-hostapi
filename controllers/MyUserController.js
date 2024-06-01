@@ -1,11 +1,20 @@
 const User =require('../models/user')
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
 const registerUser=async(req,res)=>{
     console.log('user created')
+
+    // Check if request body is empty
+    if (!req.body || Object.keys(req.body).length === 0) {
+        return res.status(400).json({ isSuccess: false, message: 'Request body is empty' });
+    }
     const{email,name,password}=req.body;
    
     try{
+         // Check if email, name, and password are present in the request body
+         if (!email || !name || !password) {
+            return res.status(400).json({ isSuccess: false, message: 'Email, name, or password is missing in the request body' });
+        }
         const existingEmail=await User.findOne({email})
         if(existingEmail){
             return res.status(201).json({isSuccess:false,message:'User Is Alredy Registered'})
@@ -31,7 +40,9 @@ refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48)
 
 
 const loginUser=async(req,res)=>{
+    console.log('call i am')
     const {email,password}=req.body;
+    console.log(email.password,'124789')
     try{
     const user=await User.findOne({email,password})
     if(!user){
