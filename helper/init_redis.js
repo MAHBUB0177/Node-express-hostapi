@@ -5,7 +5,7 @@ const client = redis.createClient({
     host: '127.0.0.1',
     legacyMode: true,
 });
-client.connect().catch(console.error,'+++++++++++++++')
+// client.connect().catch(console.error,'+++++++++++++++')
 client.on('connect', () => {
     console.log('client connected to redis...');
 });

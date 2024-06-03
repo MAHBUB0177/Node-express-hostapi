@@ -12,6 +12,7 @@ const client = require('./helper/init_redis');
 
 
 app.use(morgan('dev'))
+app.use(express.json());
 
 const PORT =process.env.PORT || 500 ;
 app.get('/', (req,res)=>{

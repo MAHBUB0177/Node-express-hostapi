@@ -40,9 +40,7 @@ refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48)
 
 
 const loginUser=async(req,res)=>{
-    console.log('call i am')
     const {email,password}=req.body;
-    console.log(email.password,'124789')
     try{
     const user=await User.findOne({email,password})
     if(!user){
@@ -54,7 +52,12 @@ const loginUser=async(req,res)=>{
       }
       const accessToken=jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn: '1h',})
       const refreshToken=jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn: '2d',})
-      res.status(200).json({isSuccess:true,data:{accessToken,refreshToken,tokenExpiration,refreshTokenExpiration,user},message:'Successfully login'})
+      // Modified response object to include only email and name
+      const userData = {
+        email: user.email,
+        name: user.name
+    };
+      res.status(200).json({isSuccess:true,data:{accessToken,refreshToken,tokenExpiration,refreshTokenExpiration,user:userData},message:'Successfully login'})
     }
     catch(error){
         res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
