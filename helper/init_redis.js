@@ -1,34 +1,34 @@
-const redis = require('redis');
+// helper/init_redis.js
+const Redis = require("ioredis");
 
-const client = redis.createClient({
-    port: 6379,
-    host: '127.0.0.1',
-    legacyMode: true,
+const client = new Redis({
+    port: 10096, // Redis port
+    host: "redis-10096.c281.us-east-1-2.ec2.redns.redis-cloud.com", // Redis host
+    username: "default", // needs Redis >= 6
+    password: "XwCqAk79C3wKk54RakqV2ZCRSQ9olRM7",
 });
-// client.connect().catch(console.error,'+++++++++++++++')
+
 client.on('connect', () => {
-    console.log('client connected to redis...');
+    console.log('Client connected to Redis...');
 });
 
 client.on('ready', () => {
-    console.log('client ready to connected...');
+    console.log('Client ready to use Redis...');
 });
 
 client.on('end', () => {
-    console.log('client disconnected from redis...');
+    console.log('Client disconnected from Redis...');
 });
 
 client.on('error', (err) => {
     console.log('Redis error:', err.message);
 });
 
-//when application shut down redis client close this is very good  practice from our application
-
 process.on('SIGINT', () => {
-    client.quit();
-    process.exit();
+    client.quit(() => {
+        console.log('Redis client disconnected through app termination');
+        process.exit(0);
+    });
 });
 
-
-module.exports=client
-
+module.exports = client;

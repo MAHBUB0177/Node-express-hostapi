@@ -1,100 +1,115 @@
-const User =require('../models/user')
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const User = require("../models/user");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const client = require("../helper/init_redis");
 
-const registerUser=async(req,res)=>{
-    console.log('user created')
+const registerUser = async (req, res) => {
+  console.log("user created");
+  // Check if request body is empty
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return res
+      .status(400)
+      .json({ isSuccess: false, message: "Request body is empty" });
+  }
+  const { email, name, password } = req.body;
 
-    // Check if request body is empty
-    if (!req.body || Object.keys(req.body).length === 0) {
-        return res.status(400).json({ isSuccess: false, message: 'Request body is empty' });
+  try {
+    // Check if email, name, and password are present in the request body
+    if (!email || !name || !password) {
+      return res
+        .status(400)
+        .json({
+          isSuccess: false,
+          message: "Email, name, or password is missing in the request body",
+        });
     }
-    const{email,name,password}=req.body;
-   
-    try{
-         // Check if email, name, and password are present in the request body
-         if (!email || !name || !password) {
-            return res.status(400).json({ isSuccess: false, message: 'Email, name, or password is missing in the request body' });
-        }
-        const existingEmail=await User.findOne({email})
-        if(existingEmail){
-            return res.status(201).json({isSuccess:false,message:'User Is Alredy Registered'})
-        }
-         
-        const user=new User({email:'mahbub@email.com',name:'mahbub',password:'12345'})
-        await User.bulkSave()
-        return res.status(200).json({isSuccess:true,message:'User Registered Successfully'})
-    }
-    catch{
-    return res.status(500).json({ isSuccess: false, error: error, message: 'Registration failed' });
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res
+        .status(201)
+        .json({ isSuccess: false, message: "User Is Alredy Registered" });
     }
 
-}
+    const user = new User({
+      email: "mahbub@email.com",
+      name: "mahbub",
+      password: "12345",
+    });
+    await User.bulkSave();
+    return res
+      .status(200)
+      .json({ isSuccess: true, message: "User Registered Successfully" });
+  } catch {
+    return res
+      .status(500)
+      .json({ isSuccess: false, error: error, message: "Registration failed" });
+  }
+};
 
 //calculate access token expiration time
-const tokenExpiration=new Date();
-tokenExpiration.setHours(tokenExpiration.getHours() + 1)
+const tokenExpiration = new Date();
+tokenExpiration.setHours(tokenExpiration.getHours() + 1);
 
 //calculate refresh token expiration time
 const refreshTokenExpiration = new Date();
-refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48)
-
+refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48);
 
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    console.log(password, email);
-    try {
-        const user = await User.findOne({ email });
-        console.log(user, '+++++');
-        
-        if (!user) {
-            return res.status(401).json({
-                isSuccess: false,
-                error: 'Authentication Failed',
-                message: 'Email or password is wrong'
-            });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.status(401).json({
-                isSuccess: false,
-                error: 'Authentication failed',
-                message: 'Email or password is wrong'
-            });
-        }
-
-        const accessToken = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-        const refreshToken = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '2d' }
-        );
-
-        // Modified response object to include only email and name
-        const userData = {
-            email: user.email,
-            name: user.name
-        };
-
-        res.status(200).json({
-            isSuccess: true,
-            data: { accessToken, refreshToken, user: userData },
-            message: 'Successfully logged in'
-        });
-    } catch (error) {
-        console.error(error); // Log the error for debugging
-        res.status(500).json({
-            isSuccess: false,
-            error: 'Authentication failed',
-            message: 'An internal server error occurred'
-        });
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        isSuccess: false,
+        error: "Authentication Failed",
+        message: "Email or password is wrong",
+      });
     }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        isSuccess: false,
+        error: "Authentication failed",
+        message: "Email or password is wrong",
+      });
+    }
+
+    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "2d" }
+    );
+
+    // Modified response object to include only email and name
+    const userData = {
+      email: user.email,
+      name: user.name,
+    };
+    const responseData = { accessToken, refreshToken, user: userData };
+    await client.set("authKey", JSON.stringify(responseData), "EX", 86400); // Set the data with a 24-hour expiration
+    console.log("Value set successfully");
+
+    const value = await client.get("authKey");
+    const storedData = JSON.parse(value);
+    console.log("Stored Data:", storedData);
+
+    res.status(200).json({
+      isSuccess: true,
+      data: { accessToken, refreshToken, user: userData },
+      message: "Successfully logged in",
+    });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({
+      isSuccess: false,
+      error: "Authentication failed",
+      message: "An internal server error occurred",
+    });
+  }
 };
 
-module.exports={registerUser,loginUser}
+module.exports = { registerUser, loginUser };

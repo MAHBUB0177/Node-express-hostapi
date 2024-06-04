@@ -7,8 +7,22 @@ const products_routes = require('./routes/products')
 const user_routes = require('./routes/user')
 // app.js
 const client = require('./helper/init_redis');
-// redisClient()
-// console.log(redisClient)
+
+client.set('name', 'mahbub', (err) => {
+    if (err) {
+        console.error('Error setting value:', err.message);
+    } else {
+        console.log('Value set successfully');
+
+        client.get('name', (err, value) => {
+            if (err) {
+                console.error('Error getting value:', err.message);
+            } else {
+                console.log('Value:', value);
+            }
+        });
+    }
+});
 
 
 app.use(morgan('dev'))
@@ -20,16 +34,16 @@ res.send('Hi, I Am Live')
 });
 
 
-//SET AND GET REDIS VALUE
-client.SET('name', 'mahbub')
-client.GET('name', (err,value)=>{
-    if(err){
-        console.log(err.message)
-    }
-    else{
-        console.log(value)
-    }
-})
+// //SET AND GET REDIS VALUE
+// client.SET('name', 'mahbub')
+// client.GET('name', (err,value)=>{
+//     if(err){
+//         console.log(err.message)
+//     }
+//     else{
+//         console.log(value)
+//     }
+// })
 
 app.use('/api/products',products_routes)
 //authentication routes
