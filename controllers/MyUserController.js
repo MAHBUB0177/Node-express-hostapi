@@ -1,5 +1,6 @@
 const User =require('../models/user')
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 const registerUser=async(req,res)=>{
     console.log('user created')
@@ -39,30 +40,61 @@ const refreshTokenExpiration = new Date();
 refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48)
 
 
-const loginUser=async(req,res)=>{
-    const {email,password}=req.body;
-    try{
-    const user=await User.findOne({email,password})
-    if(!user){
-        res.status(201).json({isSuccess:false,error:'Authentication Failed',message:'Email or password is wrong'})
-    }
-    
-    if (!password) {
-        return res.status(401).json({ isSuccess: false, error: 'Authentication failed', message: 'Email or password is wrong' });
-      }
-      const accessToken=jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn: '1h',})
-      const refreshToken=jwt.sign({userId:user._id},process.env.JWT_SECRET,{expiresIn: '2d',})
-      // Modified response object to include only email and name
-      const userData = {
-        email: user.email,
-        name: user.name
-    };
-      res.status(200).json({isSuccess:true,data:{accessToken,refreshToken,tokenExpiration,refreshTokenExpiration,user:userData},message:'Successfully login'})
-    }
-    catch(error){
-        res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
-    }
+const loginUser = async (req, res) => {
+    const { email, password } = req.body;
+    console.log(password, email);
+    try {
+        const user = await User.findOne({ email });
+        console.log(user, '+++++');
+        
+        if (!user) {
+            return res.status(401).json({
+                isSuccess: false,
+                error: 'Authentication Failed',
+                message: 'Email or password is wrong'
+            });
+        }
 
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
-}
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                isSuccess: false,
+                error: 'Authentication failed',
+                message: 'Email or password is wrong'
+            });
+        }
+
+        const accessToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        const refreshToken = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '2d' }
+        );
+
+        // Modified response object to include only email and name
+        const userData = {
+            email: user.email,
+            name: user.name
+        };
+
+        res.status(200).json({
+            isSuccess: true,
+            data: { accessToken, refreshToken, user: userData },
+            message: 'Successfully logged in'
+        });
+    } catch (error) {
+        console.error(error); // Log the error for debugging
+        res.status(500).json({
+            isSuccess: false,
+            error: 'Authentication failed',
+            message: 'An internal server error occurred'
+        });
+    }
+};
+
 module.exports={registerUser,loginUser}
