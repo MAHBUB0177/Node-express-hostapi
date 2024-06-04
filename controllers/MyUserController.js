@@ -95,11 +95,12 @@ const loginUser = async (req, res) => {
 
     const value = await client.get("authKey");
     const storedData = JSON.parse(value);
-    console.log("Stored Data:", storedData);
+    // console.log("Stored Data:", storedData);
 
     res.status(200).json({
       isSuccess: true,
-      data: { accessToken, refreshToken, user: userData },
+    //   data: { accessToken, refreshToken, user: userData },
+      data:storedData,
       message: "Successfully logged in",
     });
   } catch (error) {
