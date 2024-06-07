@@ -4,7 +4,6 @@ const bcrypt = require("bcrypt");
 const client = require("../helper/init_redis");
 
 const registerUser = async (req, res) => {
-  console.log("user created");
   // Check if request body is empty
   if (!req.body || Object.keys(req.body).length === 0) {
     return res
@@ -12,6 +11,7 @@ const registerUser = async (req, res) => {
       .json({ isSuccess: false, message: "Request body is empty" });
   }
   const { email, name, password } = req.body;
+  console.log(email, password, name, '++++++++++++')
 
   try {
     // Check if email, name, and password are present in the request body
@@ -31,15 +31,15 @@ const registerUser = async (req, res) => {
     }
 
     const user = new User({
-      email: "mahbub@email.com",
-      name: "mahbub",
-      password: "12345",
+      email,
+      name,
+      password
     });
-    await User.bulkSave();
+    await user.save();
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
-  } catch {
+  } catch (error) {
     return res
       .status(500)
       .json({ isSuccess: false, error: error, message: "Registration failed" });
@@ -99,8 +99,8 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({
       isSuccess: true,
-    //   data: { accessToken, refreshToken, user: userData },
-      data:storedData,
+      //   data: { accessToken, refreshToken, user: userData },
+      data: storedData,
       message: "Successfully logged in",
     });
   } catch (error) {
@@ -112,5 +112,41 @@ const loginUser = async (req, res) => {
     });
   }
 };
+
+
+
+// const refreshToken = async (req, res) => {
+//   const { refreshToken } = req.body;
+//   console.log(refreshToken, '+++++++++++++++refreshToken');
+//   try {
+//     if (!refreshToken) {
+//       return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
+//     }
+//     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET , async (error, user) => {
+//       if (error) {
+//         return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
+//       }
+
+//       const userInfo = await User.findOne({ _id: user.userId });
+//       if (!userInfo) {
+//         return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
+//       }
+//       const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET , {
+//         expiresIn: '1h',
+//       });
+//       const refreshToken = jwt.sign(
+//         { userId: user.userId },
+//         process.env.REFRESH_TOKEN_SECRET ,
+//         {
+//           expiresIn: '2d',
+//         }
+//       );
+//       res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
+//     });
+//   } catch (error) {
+//     res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
+//   }
+// }
+
 
 module.exports = { registerUser, loginUser };
