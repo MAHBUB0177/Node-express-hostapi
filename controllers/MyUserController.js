@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const client = require("../helper/init_redis");
 const user = require("../models/user");
+const { generateMailOptions } = require("../helper/emailOptions");
+const { transporter } = require("../helper/emailConfig");
+const { categoryEmail } = require("../templates/emailtemplates");
 
 const registerUser = async (req, res) => {
   // Check if request body is empty
@@ -37,6 +40,14 @@ const registerUser = async (req, res) => {
       password
     });
     await user.save();
+    transporter.sendMail(generateMailOptions('peartalam@gmail.com', 'Dynamic Email Test', "", categoryEmail(name)), (error, info) => {
+      console.log('email option clled')
+      if (error) {
+        console.error('Error occurred while sending email:', error);
+      } else {
+        console.log('Email sent successfully:', info.response);
+      }
+    });
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
@@ -196,8 +207,6 @@ const currentuserInfo=async(req,res)=>{
     res.status(500).json({isSuccess:false,message:'something went wrong',error:error})}
 
 }
-
-
 
 
 module.exports = { registerUser, loginUser,refreshToken,updateUser,deleteUser,currentuserInfo };
