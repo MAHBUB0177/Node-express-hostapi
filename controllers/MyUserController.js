@@ -2,6 +2,7 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const client = require("../helper/init_redis");
+const user = require("../models/user");
 
 const registerUser = async (req, res) => {
   // Check if request body is empty
@@ -115,38 +116,88 @@ const loginUser = async (req, res) => {
 
 
 
-// const refreshToken = async (req, res) => {
-//   const { refreshToken } = req.body;
-//   console.log(refreshToken, '+++++++++++++++refreshToken');
-//   try {
-//     if (!refreshToken) {
-//       return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
-//     }
-//     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET , async (error, user) => {
-//       if (error) {
-//         return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
-//       }
+const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+  try {
+    if (!refreshToken) {
+      return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
+    }
+    jwt.verify(refreshToken, process.env.JWT_SECRET , async (error, user) => {
+      if (error) {
+        return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
+      }
 
-//       const userInfo = await User.findOne({ _id: user.userId });
-//       if (!userInfo) {
-//         return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
-//       }
-//       const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET , {
-//         expiresIn: '1h',
-//       });
-//       const refreshToken = jwt.sign(
-//         { userId: user.userId },
-//         process.env.REFRESH_TOKEN_SECRET ,
-//         {
-//           expiresIn: '2d',
-//         }
-//       );
-//       res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
-//     });
-//   } catch (error) {
-//     res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
-//   }
-// }
+      const userInfo = await User.findOne({ _id: user.userId });
+      if (!userInfo) {
+        return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
+      }
+      const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
+        expiresIn: '1h',
+      });
+      const refreshToken = jwt.sign(
+        { userId: user.userId },
+        process.env.REFRESH_TOKEN_SECRET,
+        {
+          expiresIn: '2d',
+        }
+      );
+      res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
+    });
+  } catch (error) {
+    res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
+  }
+}
 
 
-module.exports = { registerUser, loginUser };
+
+const updateUser = async (req, res) => {
+  const userId = req.user.userId; // Extract user ID from the token
+  // const {id }= req.body;
+  const updateData = req.body; // Get the update data from the request body
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ isSuccess: false, message: 'User not found' });
+    }
+    // Update the user's information
+    Object.assign(user, updateData);
+    await user.save();
+
+    res.status(200).json({ isSuccess: true, data: user, message: 'User updated successfully' });
+  } catch (error) {
+    res.status(500).json({ isSuccess: false, error: error.message, message: 'Failed to update user' });
+  }
+};
+
+
+const deleteUser = async (req, res) => {
+  try {
+    let { id } = req.params;
+    id = id.trim(); 
+    const result = await User.deleteOne({ _id:id});
+    res.status(200).json({ isSuccess: true, data: result, message: 'User delete successfully' });
+  } catch (error) {
+    res.status(404).json({ isSuccess: false, error: error, message: 'Please try again' });
+  }
+};
+
+const currentuserInfo=async(req,res)=>{
+  const{userId}=req.user;
+  // const{userId}=req.body;
+  const user=await User.findById(userId);
+ try{ 
+  if(!user){
+    res.status(404).json({isSuccess:false,message:'user not found'})
+  }
+  res.status(200).json({isSuccess:true,message:'user found',user:user})
+}
+  catch(error){
+    res.status(500).json({isSuccess:false,message:'something went wrong',error:error})}
+
+}
+
+
+
+
+module.exports = { registerUser, loginUser,refreshToken,updateUser,deleteUser,currentuserInfo };
