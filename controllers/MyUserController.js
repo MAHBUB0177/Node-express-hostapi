@@ -127,38 +127,72 @@ const loginUser = async (req, res) => {
 
 
 
+// const refreshToken = async (req, res) => {
+//   const { refreshToken } = req.body;
+//   try {
+//     if (!refreshToken) {
+//       return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
+//     }
+//     jwt.verify(refreshToken, process.env.JWT_SECRET , async (error, user) => {
+//       if (error) {
+//         return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
+//       }
+
+//       const userInfo = await User.findOne({ _id: user.userId });
+//       if (!userInfo) {
+//         return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
+//       }
+//       const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
+//         expiresIn: '1h',
+//       });
+//       const refreshToken = jwt.sign(
+//         { userId: user.userId },
+//         process.env.REFRESH_TOKEN_SECRET,
+//         {
+//           expiresIn: '2d',
+//         }
+//       );
+//       res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
+//     });
+//   } catch (error) {
+//     res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
+//   }
+// }
+
 const refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
   try {
     if (!refreshToken) {
       return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
     }
-    jwt.verify(refreshToken, process.env.JWT_SECRET , async (error, user) => {
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, user) => {
       if (error) {
-        return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
+        return res.status(403).json({ isSuccess: false, error, message: 'Invalid refresh token' });
       }
 
       const userInfo = await User.findOne({ _id: user.userId });
       if (!userInfo) {
-        return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
+        return res.status(403).json({ isSuccess: false, error: 'User not found', message: 'User not found' });
       }
-      const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
-        expiresIn: '1h',
+
+      const newAccessToken = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const newRefreshToken = jwt.sign({ userId: user.userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2d' });
+
+      res.status(200).json({
+        isSuccess: true,
+        data: {
+          token: newAccessToken,
+          refreshToken: newRefreshToken,
+          user: userInfo
+        },
+        message: "Successfully refreshed token"
       });
-      const refreshToken = jwt.sign(
-        { userId: user.userId },
-        process.env.REFRESH_TOKEN_SECRET,
-        {
-          expiresIn: '2d',
-        }
-      );
-      res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
     });
   } catch (error) {
-    res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
+    res.status(500).json({ isSuccess: false, error, message: 'Authentication failed' });
   }
-}
-
+};
 
 
 const updateUser = async (req, res) => {
