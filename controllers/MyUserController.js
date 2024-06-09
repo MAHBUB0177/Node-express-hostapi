@@ -4,14 +4,13 @@ const bcrypt = require("bcrypt");
 const client = require("../helper/init_redis");
 
 const registerUser = async (req, res) => {
-  console.log("user created");
+  const { email, name, password } = req.body;
   // Check if request body is empty
   if (!req.body || Object.keys(req.body).length === 0) {
     return res
       .status(400)
       .json({ isSuccess: false, message: "Request body is empty" });
   }
-  const { email, name, password } = req.body;
 
   try {
     // Check if email, name, and password are present in the request body
@@ -30,12 +29,8 @@ const registerUser = async (req, res) => {
         .json({ isSuccess: false, message: "User Is Alredy Registered" });
     }
 
-    const user = new User({
-      email: "mahbub@email.com",
-      name: "mahbub",
-      password: "12345",
-    });
-    await User.bulkSave();
+    const user = new User({ email, name, password });
+    await user.save();
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
@@ -80,7 +75,7 @@ const loginUser = async (req, res) => {
     });
     const refreshToken = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET,
+      process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "2d" }
     );
 
@@ -113,4 +108,74 @@ const loginUser = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser };
+const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+  try {
+    if (!refreshToken) {
+      return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
+    }
+
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, user) => {
+      if (error) {
+        return res.status(403).json({ isSuccess: false, error, message: 'Invalid refresh token' });
+      }
+
+      const userInfo = await User.findOne({ _id: user.userId });
+      if (!userInfo) {
+        return res.status(403).json({ isSuccess: false, error: 'User not found', message: 'User not found' });
+      }
+
+      const newAccessToken = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const newRefreshToken = jwt.sign({ userId: user.userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2d' });
+
+      res.status(200).json({
+        isSuccess: true,
+        data: {
+          token: newAccessToken,
+          refreshToken: newRefreshToken,
+          user: userInfo
+        },
+        message: "Successfully refreshed token"
+      });
+    });
+  } catch (error) {
+    res.status(500).json({ isSuccess: false, error, message: 'Authentication failed' });
+  }
+};
+const updateUser = async (req, res) => {
+  console.log('first')
+  const userId = req.user.userId;
+  const updateData = req.body;
+  console.log(updateData,userId,'++++++++++++')
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ isSuccess: false, message: 'User not found' });
+    }
+
+    // Update the user's information
+    Object.assign(user, updateData);
+
+    // Save the updated user
+    await user.save();
+
+    res.json({ isSuccess: true, data: user, message: 'User updated successfully' });
+  } catch (error) {
+    res.status(500).json({ isSuccess: false, error: error.message, message: 'Failed to update user' });
+  }
+};
+
+const deleteMyUser = async (req, res) => {
+  const { id } = req.query;
+  try {
+    
+    const result = await User.deleteOne({ _id: new ObjectId(id) });
+    res.json({ isSuccess: true, data: result, message: 'User delete successfully' });
+  } catch (error) {
+    res.status(404).json({ isSuccess: false, error: error, message: 'Please try again' });
+  }
+};
+
+
+module.exports = { registerUser, loginUser ,refreshToken,deleteMyUser,updateUser};
