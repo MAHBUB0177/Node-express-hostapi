@@ -8,14 +8,13 @@ const { transporter } = require("../helper/emailConfig");
 const { categoryEmail } = require("../templates/emailtemplates");
 
 const registerUser = async (req, res) => {
+  const { email, name, password } = req.body;
   // Check if request body is empty
   if (!req.body || Object.keys(req.body).length === 0) {
     return res
       .status(400)
       .json({ isSuccess: false, message: "Request body is empty" });
   }
-  const { email, name, password } = req.body;
-  console.log(email, password, name, '++++++++++++')
 
   try {
     // Check if email, name, and password are present in the request body
@@ -34,20 +33,8 @@ const registerUser = async (req, res) => {
         .json({ isSuccess: false, message: "User Is Alredy Registered" });
     }
 
-    const user = new User({
-      email,
-      name,
-      password
-    });
+    const user = new User({ email, name, password });
     await user.save();
-    transporter.sendMail(generateMailOptions('peartalam@gmail.com', 'Dynamic Email Test', "", categoryEmail(name)), (error, info) => {
-      console.log('email option clled')
-      if (error) {
-        console.error('Error occurred while sending email:', error);
-      } else {
-        console.log('Email sent successfully:', info.response);
-      }
-    });
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
@@ -92,7 +79,7 @@ const loginUser = async (req, res) => {
     });
     const refreshToken = jwt.sign(
       { userId: user._id },
-      process.env.JWT_SECRET,
+      process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "2d" }
     );
 
@@ -196,8 +183,8 @@ const refreshToken = async (req, res) => {
 
 
 const updateUser = async (req, res) => {
-  const userId = req.user.userId; // Extract user ID from the token
-  // const {id }= req.body;
+  // const userId = req.user.userId; // Extract user ID from the token
+  const {userId }= req.body;
   const updateData = req.body; // Get the update data from the request body
 
   try {
@@ -217,10 +204,13 @@ const updateUser = async (req, res) => {
 
 
 const deleteUser = async (req, res) => {
+  console.log(' called delete function')
   try {
     let { id } = req.params;
+    console.log(id,'+++++++id')
     id = id.trim(); 
     const result = await User.deleteOne({ _id:id});
+    console.log(result,'==========')
     res.status(200).json({ isSuccess: true, data: result, message: 'User delete successfully' });
   } catch (error) {
     res.status(404).json({ isSuccess: false, error: error, message: 'Please try again' });
@@ -228,8 +218,8 @@ const deleteUser = async (req, res) => {
 };
 
 const currentuserInfo=async(req,res)=>{
-  const{userId}=req.user;
-  // const{userId}=req.body;
+  // const{userId}=req.user;
+  const{userId}=req.body;
   const user=await User.findById(userId);
  try{ 
   if(!user){

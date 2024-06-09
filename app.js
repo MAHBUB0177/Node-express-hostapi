@@ -5,24 +5,22 @@ const app=express()
 const connectDB=require("./db/connect")
 const products_routes = require('./routes/products')
 const user_routes = require('./routes/user')
-// app.js
 const client = require('./helper/init_redis');
+// client.set('name', 'mahbub', (err) => {
+//     if (err) {
+//         console.error('Error setting value:', err.message);
+//     } else {
+//         console.log('Value set successfully');
 
-client.set('name', 'mahbub', (err) => {
-    if (err) {
-        console.error('Error setting value:', err.message);
-    } else {
-        console.log('Value set successfully');
-
-        client.get('name', (err, value) => {
-            if (err) {
-                console.error('Error getting value:', err.message);
-            } else {
-                console.log('Value:', value);
-            }
-        });
-    }
-});
+//         client.get('name', (err, value) => {
+//             if (err) {
+//                 console.error('Error getting value:', err.message);
+//             } else {
+//                 console.log('Value:', value);
+//             }
+//         });
+//     }
+// });
 
 
 app.use(morgan('dev'))
@@ -33,18 +31,7 @@ app.get('/', (req,res)=>{
 res.send('Hi, I Am Live')
 });
 
-
-// //SET AND GET REDIS VALUE
-// client.SET('name', 'mahbub')
-// client.GET('name', (err,value)=>{
-//     if(err){
-//         console.log(err.message)
-//     }
-//     else{
-//         console.log(value)
-//     }
-// })
-
+//product routes
 app.use('/api/products',products_routes)
 //authentication routes
 app.use('/api/user',user_routes)
@@ -57,8 +44,6 @@ const start=async() =>{
     }
     catch(error){
         console.log(error)
-
     }
 }
-
 start()
