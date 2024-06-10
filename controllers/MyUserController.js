@@ -5,7 +5,7 @@ const client = require("../helper/init_redis");
 const user = require("../models/user");
 const { generateMailOptions } = require("../helper/emailOptions");
 const { transporter } = require("../helper/emailConfig");
-const { categoryEmail, userEmail } = require("../templates/emailtemplates");
+const {userEmail } = require("../templates/emailtemplates");
 
 const registerUser = async (req, res) => {
   const { email, name, password } = req.body;
@@ -19,12 +19,10 @@ const registerUser = async (req, res) => {
   try {
     // Check if email, name, and password are present in the request body
     if (!email || !name || !password) {
-      return res
-        .status(400)
-        .json({
-          isSuccess: false,
-          message: "Email, name, or password is missing in the request body",
-        });
+      return res.status(400).json({
+        isSuccess: false,
+        message: "Email, name, or password is missing in the request body",
+      });
     }
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
@@ -35,13 +33,21 @@ const registerUser = async (req, res) => {
 
     const user = new User({ email, name, password });
     await user.save();
-    transporter.sendMail(generateMailOptions('peartalam@gmail.com', 'User Registration Mail', "", userEmail(name,password)), (error, info) => {
-      if (error) {
-        console.error('Error occurred while sending email:', error);
-      } else {
-        console.log('Email sent successfully:', info.response);
+    transporter.sendMail(
+      generateMailOptions(
+        "peartalam@gmail.com",
+        "User Registration Mail",
+        "",
+        userEmail(name, password)
+      ),
+      (error, info) => {
+        if (error) {
+          console.error("Error occurred while sending email:", error);
+        } else {
+          console.log("Email sent successfully:", info.response);
+        }
       }
-    });
+    );
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
@@ -101,7 +107,6 @@ const loginUser = async (req, res) => {
 
     const value = await client.get("authKey");
     const storedData = JSON.parse(value);
-    // console.log("Stored Data:", storedData);
 
     res.status(200).json({
       isSuccess: true,
@@ -119,44 +124,72 @@ const loginUser = async (req, res) => {
   }
 };
 
-
-
-
 const refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
   try {
     if (!refreshToken) {
-      return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
+      return res
+        .status(401)
+        .json({
+          isSuccess: false,
+          error: "Invalid refresh token",
+          message: "Invalid refresh token",
+        });
     }
 
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (error, user) => {
-      if (error) {
-        return res.status(403).json({ isSuccess: false, error, message: 'Invalid refresh token' });
+    jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+      async (error, user) => {
+        if (error) {
+          return res
+            .status(403)
+            .json({
+              isSuccess: false,
+              error,
+              message: "Invalid refresh token",
+            });
+        }
+
+        const userInfo = await User.findOne({ _id: user.userId });
+        if (!userInfo) {
+          return res
+            .status(403)
+            .json({
+              isSuccess: false,
+              error: "User not found",
+              message: "User not found",
+            });
+        }
+
+        const newAccessToken = jwt.sign(
+          { userId: user.userId },
+          process.env.JWT_SECRET,
+          { expiresIn: "1h" }
+        );
+        const newRefreshToken = jwt.sign(
+          { userId: user.userId },
+          process.env.REFRESH_TOKEN_SECRET,
+          { expiresIn: "2d" }
+        );
+
+        res.status(200).json({
+          isSuccess: true,
+          data: {
+            token: newAccessToken,
+            refreshToken: newRefreshToken,
+            user: userInfo,
+          },
+          message: "Successfully refreshed token",
+        });
       }
-
-      const userInfo = await User.findOne({ _id: user.userId });
-      if (!userInfo) {
-        return res.status(403).json({ isSuccess: false, error: 'User not found', message: 'User not found' });
-      }
-
-      const newAccessToken = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      const newRefreshToken = jwt.sign({ userId: user.userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '2d' });
-
-      res.status(200).json({
-        isSuccess: true,
-        data: {
-          token: newAccessToken,
-          refreshToken: newRefreshToken,
-          user: userInfo
-        },
-        message: "Successfully refreshed token"
-      });
-    });
+    );
   } catch (error) {
-    res.status(500).json({ isSuccess: false, error, message: 'Authentication failed' });
+    res
+      .status(500)
+      .json({ isSuccess: false, error, message: "Authentication failed" });
   }
 };
-
 
 const updateUser = async (req, res) => {
   const userId = req.user.userId; // Extract user ID from the token
@@ -166,43 +199,77 @@ const updateUser = async (req, res) => {
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ isSuccess: false, message: 'User not found' });
+      return res
+        .status(404)
+        .json({ isSuccess: false, message: "User not found" });
     }
     // Update the user's information
     Object.assign(user, updateData);
     await user.save();
 
-    res.status(200).json({ isSuccess: true, data: user, message: 'User updated successfully' });
+    res
+      .status(200)
+      .json({
+        isSuccess: true,
+        data: user,
+        message: "User updated successfully",
+      });
   } catch (error) {
-    res.status(500).json({ isSuccess: false, error: error.message, message: 'Failed to update user' });
+    res
+      .status(500)
+      .json({
+        isSuccess: false,
+        error: error.message,
+        message: "Failed to update user",
+      });
   }
 };
-
 
 const deleteUser = async (req, res) => {
   try {
     let { id } = req.params;
-    id = id.trim(); 
-    const result = await User.deleteOne({ _id:id});
-    res.status(200).json({ isSuccess: true, data: result, message: 'User delete successfully' });
+    id = id.trim();
+    const result = await User.deleteOne({ _id: id });
+    res
+      .status(200)
+      .json({
+        isSuccess: true,
+        data: result,
+        message: "User delete successfully",
+      });
   } catch (error) {
-    res.status(404).json({ isSuccess: false, error: error, message: 'Please try again' });
+    res
+      .status(404)
+      .json({ isSuccess: false, error: error, message: "Please try again" });
   }
 };
 
-const currentuserInfo=async(req,res)=>{
-  const{userId}=req.user;
-  const user=await User.findById(userId);
- try{ 
-  if(!user){
-    res.status(404).json({isSuccess:false,message:'user not found'})
+const currentuserInfo = async (req, res) => {
+  const { userId } = req.user;
+  const user = await User.findById(userId);
+  try {
+    if (!user) {
+      res.status(404).json({ isSuccess: false, message: "user not found" });
+    }
+    res
+      .status(200)
+      .json({ isSuccess: true, message: "user found", user: user });
+  } catch (error) {
+    res
+      .status(500)
+      .json({
+        isSuccess: false,
+        message: "something went wrong",
+        error: error,
+      });
   }
-  res.status(200).json({isSuccess:true,message:'user found',user:user})
-}
-  catch(error){
-    res.status(500).json({isSuccess:false,message:'something went wrong',error:error})}
+};
 
-}
-
-
-module.exports = { registerUser, loginUser,refreshToken,updateUser,deleteUser,currentuserInfo };
+module.exports = {
+  registerUser,
+  loginUser,
+  refreshToken,
+  updateUser,
+  deleteUser,
+  currentuserInfo,
+};
