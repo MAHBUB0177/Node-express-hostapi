@@ -114,37 +114,6 @@ const loginUser = async (req, res) => {
 
 
 
-// const refreshToken = async (req, res) => {
-//   const { refreshToken } = req.body;
-//   try {
-//     if (!refreshToken) {
-//       return res.status(401).json({ isSuccess: false, error: 'Invalid refresh token', message: 'Invalid refresh token' });
-//     }
-//     jwt.verify(refreshToken, process.env.JWT_SECRET , async (error, user) => {
-//       if (error) {
-//         return res.status(403).json({ isSuccess: false, error: error, message: 'Invalid refresh token' });
-//       }
-
-//       const userInfo = await User.findOne({ _id: user.userId });
-//       if (!userInfo) {
-//         return res.status(403).json({ isSuccess: false, error: error, message: 'User not find' });
-//       }
-//       const token = jwt.sign({ userId: user.userId }, process.env.JWT_SECRET, {
-//         expiresIn: '1h',
-//       });
-//       const refreshToken = jwt.sign(
-//         { userId: user.userId },
-//         process.env.REFRESH_TOKEN_SECRET,
-//         {
-//           expiresIn: '2d',
-//         }
-//       );
-//       res.status(200).json({ isSuccess: true, data: { token, tokenExpiration, refreshToken, refreshTokenExpiration, user: userInfo }, message: "Successfully login again" });
-//     });
-//   } catch (error) {
-//     res.status(500).json({ isSuccess: false, error: error, message: 'Authentication failed' });
-//   }
-// }
 
 const refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
@@ -183,8 +152,8 @@ const refreshToken = async (req, res) => {
 
 
 const updateUser = async (req, res) => {
-  // const userId = req.user.userId; // Extract user ID from the token
-  const {userId }= req.body;
+  const userId = req.user.userId; // Extract user ID from the token
+  // const {userId }= req.body;
   const updateData = req.body; // Get the update data from the request body
 
   try {
@@ -204,13 +173,10 @@ const updateUser = async (req, res) => {
 
 
 const deleteUser = async (req, res) => {
-  console.log(' called delete function')
   try {
     let { id } = req.params;
-    console.log(id,'+++++++id')
     id = id.trim(); 
     const result = await User.deleteOne({ _id:id});
-    console.log(result,'==========')
     res.status(200).json({ isSuccess: true, data: result, message: 'User delete successfully' });
   } catch (error) {
     res.status(404).json({ isSuccess: false, error: error, message: 'Please try again' });
@@ -218,8 +184,7 @@ const deleteUser = async (req, res) => {
 };
 
 const currentuserInfo=async(req,res)=>{
-  // const{userId}=req.user;
-  const{userId}=req.body;
+  const{userId}=req.user;
   const user=await User.findById(userId);
  try{ 
   if(!user){
