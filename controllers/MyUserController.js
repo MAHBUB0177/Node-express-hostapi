@@ -5,7 +5,7 @@ const client = require("../helper/init_redis");
 const user = require("../models/user");
 const { generateMailOptions } = require("../helper/emailOptions");
 const { transporter } = require("../helper/emailConfig");
-const { categoryEmail } = require("../templates/emailtemplates");
+const { categoryEmail, userEmail } = require("../templates/emailtemplates");
 
 const registerUser = async (req, res) => {
   const { email, name, password } = req.body;
@@ -35,6 +35,13 @@ const registerUser = async (req, res) => {
 
     const user = new User({ email, name, password });
     await user.save();
+    transporter.sendMail(generateMailOptions('peartalam@gmail.com', 'User Registration Mail', "", userEmail(name,password)), (error, info) => {
+      if (error) {
+        console.error('Error occurred while sending email:', error);
+      } else {
+        console.log('Email sent successfully:', info.response);
+      }
+    });
     return res
       .status(200)
       .json({ isSuccess: true, message: "User Registered Successfully" });
