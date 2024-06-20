@@ -1,8 +1,10 @@
 require("dotenv").config()
 const connectDB= require('./db/connect')
  const Product =require('./models/product')
+ const Items =require('./models/items')
  const User=require('./models/user')
  const ProductJson =require('./products.json')
+ const ItemJson =require('./items.json')
 
  const start =async ()=>{
     try {
@@ -17,6 +19,17 @@ const connectDB= require('./db/connect')
 
  start()
 
+ const itemscreate=async ()=>{
+    try {
+        await connectDB(process.env.MONGODB_URI);
+        await Items.deleteMany()//remove previous data and when call this function only new collection is added to data base
+        await Items.create(ItemJson)
+        console.log('success item')
+    } catch (error) {
+        console.log(error);
+    }
+ } 
+ itemscreate()
 
  const user =async ()=>{
     try {
