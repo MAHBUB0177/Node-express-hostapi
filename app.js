@@ -2,6 +2,7 @@ require("dotenv").config()
 const express=require("express")
 const morgan = require('morgan')
 const app=express()
+const cors = require('cors');
 const connectDB=require("./db/connect")
 const products_routes = require('./routes/products')
 const user_routes = require('./routes/user')
@@ -25,6 +26,7 @@ const client = require('./helper/init_redis');
 
 app.use(morgan('dev'))
 app.use(express.json());
+app.use(cors());
 
 const PORT =process.env.PORT || 500 ;
 app.get('/', (req,res)=>{
