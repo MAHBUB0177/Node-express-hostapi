@@ -7,21 +7,7 @@ const connectDB=require("./db/connect")
 const products_routes = require('./routes/products')
 const user_routes = require('./routes/user')
 const client = require('./helper/init_redis');
-// client.set('name', 'mahbub', (err) => {
-//     if (err) {
-//         console.error('Error setting value:', err.message);
-//     } else {
-//         console.log('Value set successfully');
 
-//         client.get('name', (err, value) => {
-//             if (err) {
-//                 console.error('Error getting value:', err.message);
-//             } else {
-//                 console.log('Value:', value);
-//             }
-//         });
-//     }
-// });
 
 
 app.use(morgan('dev'))
