@@ -60,11 +60,15 @@ const registerUser = async (req, res) => {
 
 //calculate access token expiration time
 const tokenExpiration = new Date();
-tokenExpiration.setHours(tokenExpiration.getHours() + 1);
+// tokenExpiration.setHours(tokenExpiration.getHours() + 1);
+tokenExpiration.setMinutes(tokenExpiration.getMinutes() + 3);
 
 //calculate refresh token expiration time
+// const refreshTokenExpiration = new Date();
+// refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48);
 const refreshTokenExpiration = new Date();
-refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48);
+refreshTokenExpiration.setMinutes(refreshTokenExpiration.getMinutes() + 8);
+
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -88,12 +92,12 @@ const loginUser = async (req, res) => {
     }
 
     const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "3m",
     });
     const refreshToken = jwt.sign(
       { userId: user._id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "2d" }
+      { expiresIn: "8m" }
     );
 
     // Modified response object to include only email and name
@@ -101,7 +105,7 @@ const loginUser = async (req, res) => {
       email: user.email,
       name: user.name,
     };
-    const responseData = { accessToken, refreshToken, user: userData };
+    const responseData = { accessToken, refreshToken, user: userData ,tokenExpiration,refreshTokenExpiration};
     await client.set("authKey", JSON.stringify(responseData), "EX", 86400); // Set the data with a 24-hour expiration
     console.log("Value set successfully");
 
@@ -165,18 +169,18 @@ const refreshToken = async (req, res) => {
         const newAccessToken = jwt.sign(
           { userId: user.userId },
           process.env.JWT_SECRET,
-          { expiresIn: "1h" }
+          { expiresIn: "3min" }
         );
         const newRefreshToken = jwt.sign(
           { userId: user.userId },
           process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: "2d" }
+          { expiresIn: "8m" }
         );
 
         res.status(200).json({
           isSuccess: true,
           data: {
-            token: newAccessToken,
+            accessToken: newAccessToken,
             refreshToken: newRefreshToken,
             user: userInfo,
           },

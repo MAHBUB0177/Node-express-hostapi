@@ -5,6 +5,7 @@ const app=express()
 const cors = require('cors');
 const connectDB=require("./db/connect")
 const products_routes = require('./routes/products')
+const items_routes=require('./routes/items')
 const user_routes = require('./routes/user')
 const client = require('./helper/init_redis');
 
@@ -21,6 +22,7 @@ res.send('Hi, I Am Live')
 
 //product routes
 app.use('/api/products',products_routes)
+app.use('/api/items',items_routes)
 //authentication routes
 app.use('/api/user',user_routes)
 const start=async() =>{
