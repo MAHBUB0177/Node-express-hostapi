@@ -16,6 +16,6 @@ const {createMyProduct, geatAllProducts} = require('../controllers/itemProduct')
 
 //new added
 router.route('/create',).post(upload.single("imageFile"),createMyProduct)
-router.route('/products').get(geatAllProducts)
+router.route('/getproducts').get(geatAllProducts)
 
 module.exports=router;
