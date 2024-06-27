@@ -1,34 +1,23 @@
 const Items =require('../models/items');
 const { uploadImage } = require('./MyFileUploadControllers');
-const ItemJson =require('../items.json')
 
 const createMyProduct = async (req, res) => {
     try {
         const { productName } = req.body;
-        console.log(productName,'productName++++++++++',req.body)
-
         const existingProduct = await Items.findOne({ productName });
-
-        console.log(existingProduct,'+++++++++++')
         if (existingProduct) {
             return res.status(409).json({ isSuccess: false, message: "Product already exists" });
         }
-        // const imageUrl = await uploadImage(req.file );
-        // console.log(imageUrl,'imageUrl++++++++++++')
-        const Item = new Items(req.body);
-        // Items.imageUrl = imageUrl;
-
-        await Items.deleteMany()
-        // await Items.create(ProductJson)
-        await Item.save();
+        const imageUrl = await uploadImage(req.file );
+        const product = new Items(req.body);
+        product.image = imageUrl;
+        await product.save();
 
         res.status(201).send({ isSuccess: true, message: 'Product added successfully' });
     } catch (error) {
         res.status(500).json({ isSuccess: false, error: error, message: "Something went wrong" });
     }
 };
-
-
 const geatAllProducts=async (req,res)=>{
     console.log('we are called')
    try{ 

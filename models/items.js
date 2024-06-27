@@ -4,11 +4,11 @@ const mongoose=require("mongoose")
 const itemsSchema=new mongoose.Schema({
     productName:{
         type:String,
-        required: true
+        // required: true
     },
     price:{
         type:Number,
-        required:[true, "price must be provided"]
+        // required:[true, "price must be provided"]
     },
     featured:{
         type:Boolean,
@@ -27,8 +27,8 @@ const itemsSchema=new mongoose.Schema({
     },
     company:{
        type:String,
-       value:['apple','samsung','dell','mi'],//collection of arry
-       message:`{value} is not supported.`
+    //    value:['apple','samsung','dell','mi'],//collection of arry
+    //    message:`{value} is not supported.`
     }
 
 

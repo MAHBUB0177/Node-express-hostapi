@@ -14,9 +14,9 @@ const cloudinary = require('cloudinary').v2;
 
 // Configure your Cloudinary account with credentials
 cloudinary.config({
-    cloud_name: 'your-cloud-name',
-    api_key: 'your-api-key',
-    api_secret: 'your-api-secret'
+    cloud_name: 'dg8qdhrgh',
+    api_key: '168874616399531',
+    api_secret: 'CWymX5cZlRYIIcL3BlKms6Av60o'
 });
 
 // Define the upload function

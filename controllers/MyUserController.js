@@ -61,13 +61,13 @@ const registerUser = async (req, res) => {
 //calculate access token expiration time
 const tokenExpiration = new Date();
 // tokenExpiration.setHours(tokenExpiration.getHours() + 1);
-tokenExpiration.setMinutes(tokenExpiration.getMinutes() + 3);
+tokenExpiration.setMinutes(tokenExpiration.getMinutes() + 2);
 
 //calculate refresh token expiration time
 // const refreshTokenExpiration = new Date();
 // refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48);
 const refreshTokenExpiration = new Date();
-refreshTokenExpiration.setMinutes(refreshTokenExpiration.getMinutes() + 8);
+refreshTokenExpiration.setMinutes(refreshTokenExpiration.getMinutes() + 4);
 
 
 const loginUser = async (req, res) => {
@@ -92,12 +92,12 @@ const loginUser = async (req, res) => {
     }
 
     const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "3m",
+      expiresIn: "2m",
     });
     const refreshToken = jwt.sign(
       { userId: user._id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "8m" }
+      { expiresIn: "4m" }
     );
 
     // Modified response object to include only email and name
@@ -169,12 +169,12 @@ const refreshToken = async (req, res) => {
         const newAccessToken = jwt.sign(
           { userId: user.userId },
           process.env.JWT_SECRET,
-          { expiresIn: "3min" }
+          { expiresIn: "2min" }
         );
         const newRefreshToken = jwt.sign(
           { userId: user.userId },
           process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: "8m" }
+          { expiresIn: "4m" }
         );
 
         res.status(200).json({
