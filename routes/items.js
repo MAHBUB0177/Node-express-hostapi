@@ -11,11 +11,14 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024
     },
 });
-const {createMyProduct, geatAllProducts} = require('../controllers/itemProduct');
+const {createMyProduct, geatAllProducts, updateMyProduct} = require('../controllers/itemProduct');
+const verifyToken = require('../middleware/auth');
 
 
 //new added
-router.route('/create',).post(upload.single("imageFile"),createMyProduct)
-router.route('/getproducts').get(geatAllProducts)
+router.route('/create',).post(verifyToken,upload.single("imageFile"),createMyProduct)
+router.route('/getproducts').get(verifyToken,geatAllProducts)
+router.route("/update/:productId").put(verifyToken,upload.single("imageFile"),updateMyProduct)
+
 
 module.exports=router;
