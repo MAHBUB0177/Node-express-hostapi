@@ -62,7 +62,6 @@ const geatAllProducts=async (req,res)=>{
 
 
 const updateMyProduct = async (req, res) => {
-    console.log('update called')
     try {
         const { productId } = req.params; // Assuming product ID is passed as a URL parameter
         const { productName, ...otherFields } = req.body;
