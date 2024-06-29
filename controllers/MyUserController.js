@@ -92,12 +92,12 @@ const loginUser = async (req, res) => {
     }
 
     const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "2m",
+      expiresIn: "30m",
     });
     const refreshToken = jwt.sign(
       { userId: user._id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "4m" }
+      { expiresIn: "50m" }
     );
 
     // Modified response object to include only email and name

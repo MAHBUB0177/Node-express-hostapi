@@ -47,14 +47,19 @@ const geatAllProducts=async (req,res)=>{
         appData=appData.select(selectFix)
     }
 
+    
+
     //pagination
     let page=Number(req.query.page) || 1
     let limit =Number(req.query.limit) || 10
     let skip=(page -1) * 5
     appData=appData.skip(skip).limit(limit)
-
+    //Count total records
+    const totalRecord = await Items.countDocuments(queryObject);
+    const totalPage = Math.ceil(totalRecord / limit);
+    
     const item=await appData;
-    res.status(200).json({item,totalRecords:item.length})}
+    res.status(200).json({item,totalRecords:item.length,totalPage:totalPage})}
     catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }

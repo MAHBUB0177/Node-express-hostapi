@@ -10,6 +10,9 @@ const itemsSchema=new mongoose.Schema({
         type:Number,
         // required:[true, "price must be provided"]
     },
+    oldprice:{
+      type:Number
+    },
     featured:{
         type:Boolean,
         default:false
