@@ -17,7 +17,7 @@ const verifyToken = require('../middleware/auth');
 
 //new added
 router.route('/create',).post(verifyToken,upload.single("imageFile"),createMyProduct)
-router.route('/getproducts').get(verifyToken,geatAllProducts)
+router.route('/getproducts').get(geatAllProducts)
 router.route("/update/:productId").put(verifyToken,upload.single("imageFile"),updateMyProduct)
 
 

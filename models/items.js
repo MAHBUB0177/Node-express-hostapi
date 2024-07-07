@@ -10,6 +10,9 @@ const itemsSchema=new mongoose.Schema({
         type:Number,
         // required:[true, "price must be provided"]
     },
+    oldprice:{
+        type:Number,
+    },
     featured:{
         type:Boolean,
         default:false
@@ -25,10 +28,21 @@ const itemsSchema=new mongoose.Schema({
         type:Date,
         default:Date.now()
     },
-    company:{
+    brand:{
        type:String,
     //    value:['apple','samsung','dell','mi'],//collection of arry
     //    message:`{value} is not supported.`
+    },
+    category:{
+        type:String,
+    },
+    description:{
+        type:String,
+        // required: true
+    },
+    color:{
+        type:String,
+        // required: true
     }
 
 
