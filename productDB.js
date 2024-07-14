@@ -4,7 +4,7 @@ const connectDB= require('./db/connect')
  const Items =require('./models/items')
  const User=require('./models/user')
  const ProductJson =require('./products.json')
- const ItemJson =require('./items.json')
+ const ItemJson =require('./items')
 
  const start =async ()=>{
     try {
@@ -23,7 +23,7 @@ const connectDB= require('./db/connect')
     try {
         await connectDB(process.env.MONGODB_URI);
         await Items.deleteMany()//remove previous data and when call this function only new collection is added to data base
-        await Items.create(ItemJson)
+        // await Items.create(ItemJson)
         console.log('success item')
     } catch (error) {
         console.log(error);
