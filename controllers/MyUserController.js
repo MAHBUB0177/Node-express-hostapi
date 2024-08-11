@@ -106,16 +106,16 @@ const loginUser = async (req, res) => {
       name: user.name,
     };
     const responseData = { accessToken, refreshToken, user: userData ,tokenExpiration,refreshTokenExpiration};
-    await client.set("authKey", JSON.stringify(responseData), "EX", 86400); // Set the data with a 24-hour expiration
-    console.log("Value set successfully");
+    // await client.set("authKey", JSON.stringify(responseData), "EX", 86400); // Set the data with a 24-hour expiration
+    // console.log("Value set successfully");
 
-    const value = await client.get("authKey");
-    const storedData = JSON.parse(value);
+    // const value = await client.get("authKey");
+    // const storedData = JSON.parse(value);
 
     res.status(200).json({
       isSuccess: true,
       //   data: { accessToken, refreshToken, user: userData },
-      data: storedData,
+      data: responseData,
       message: "Successfully logged in",
     });
   } catch (error) {

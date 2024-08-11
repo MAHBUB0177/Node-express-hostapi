@@ -21,7 +21,7 @@ client.on('end', () => {
 });
 
 client.on('error', (err) => {
-    console.log('Redis error:', err.message);
+    // console.log('Redis error:', err.message);
 });
 
 process.on('SIGINT', () => {
