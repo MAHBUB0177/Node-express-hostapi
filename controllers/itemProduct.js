@@ -29,62 +29,12 @@ const createMyProduct = async (req, res) => {
   }
 }; 
 
-// const geatAllProducts = async (req, res) => {
-//   console.log('we are called',req.query)
-//   try {
-//     const { productName, brand, sort, select, _id,category ,searchTerm} = req.query;
-//        console.log(_id,'+++++_id',brand)
-//     const queryObject = {};
 
-//     if (_id) {
-//       queryObject._id = _id;
-//     }
-//     if (productName) {
-//       queryObject.productName = { $regex: productName, $options: "i" };
-//     }
-//     if (category) {
-//       queryObject.category = category;
-//     }
-//     if (brand) {
-//       queryObject.brand = brand;
-//     }
-//     let appData = Items.find(queryObject);
-//     console.log(appData, "appData+++++++++++++");
-
-//     if (sort) {
-//       let sortFix = sort.replace(",", " ");
-//       appData = appData.sort(sortFix);
-//     }
-
-//     if (select) {
-//       const selectFix = select.replace(",", " ");
-//       appData = appData.select(selectFix);
-//     }
-
-//     //pagination
-//     let page = Number(req.query.page) || 1;
-//     let limit = Number(req.query.limit) || 9;
-//     let skip = (page - 1) * 9;
-//     appData = appData.skip(skip).limit(limit);
-//     //Count total records
-//     const totalRecord = await Items.countDocuments(queryObject);
-
-//     const totalPage = Math.ceil(totalRecord / limit);
-
-//     const item = await appData;
-//     res
-//       .status(200)
-//       .json({ item, totalRecords: totalRecord, totalPage: totalPage });
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error", error: error.message });
-//   }
-// };
 
 const geatAllProducts = async (req, res) => {
-  console.log('we are called', req.query);
   try {
     const {  sort, select, _id,  searchTerm } = req.query;
-    console.log(_id, '+++++_id');
+    // console.log(searchTerm, '+++++searchTerm');
 
     const queryObject = {};
 
@@ -112,7 +62,6 @@ const geatAllProducts = async (req, res) => {
     }
 
     let appData = Items.find(queryObject);
-    console.log(appData, "appData+++++++++++++");
 
     if (sort) {
       let sortFix = sort.replace(",", " ");
@@ -136,17 +85,93 @@ const geatAllProducts = async (req, res) => {
     const totalPage = Math.ceil(totalRecord / limit);
 
     const item = await appData;
+    console.log(item,'item++++++')
+
     res.status(200).json({ item, totalRecords: totalRecord, totalPage: totalPage });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
 };
 
+// Backend: Fetch Product by ID (uses path parameter)
+const fetchProductById = async (req, res) => {
+  try {
+    const { id } = req.params;  // Use req.params to get the id from the URL
+    if (!id) {
+      return res.status(400).json({
+        isSuccess: false,
+        message: "Product ID is required",
+      });
+    }
+
+    const product = await Items.findById(id);
+    if (!product) {
+      return res.status(404).json({
+        isSuccess: false,
+        data: {},
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      isSuccess: true,
+      data: product,
+      message: "Successfully fetched product",
+    });
+  } catch (error) {
+    res.status(500).json({
+      isSuccess: false,
+      error: error.message,
+      data: {},
+      message: "Please try again",
+    });
+  }
+};
+
+
+const getRelatedProducts = async (req, res) => {
+  try {
+    const { category } = req.query;
+    console.log(req.query, 'category backend');
+
+    // Check if category is provided in the query
+    if (!category) {
+      return res.status(200).json({
+        item: [],
+        totalRecords: 0,
+        isSuccess: true,
+        message: "Category not found or not provided",
+      });
+    }
+
+    // Find products by category
+    let appData = Items.find({ category: { $regex: category, $options: "i" } });  // Case-insensitive search for category
+    const item = await appData;
+
+    // If no items found, return success with empty array
+    if (item.length === 0) {
+      return res.status(200).json({
+        item: [],
+        totalRecords: 0,
+        isSuccess: true,
+        message: "No products found in this category",
+      });
+    }
+    // Count total records for pagination or other purposes (optional)
+    const totalRecord = await Items.countDocuments({ category: { $regex: category, $options: "i" } });
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+
+
+// Route definition for fetching product by ID
 const updateMyProduct = async (req, res) => {
   try {
     const { productId } = req.params; // Assuming product ID is passed as a URL parameter
     const { productName, ...otherFields } = req.body;
-    // console.log('try called')
     // Find the existing product by ID
     const existingProduct = await Items.findById(productId);
     if (!existingProduct) {
@@ -194,4 +219,4 @@ const updateMyProduct = async (req, res) => {
   }
 };
 
-module.exports = { createMyProduct, geatAllProducts, updateMyProduct };
+module.exports = { createMyProduct, geatAllProducts, updateMyProduct,fetchProductById,getRelatedProducts };
