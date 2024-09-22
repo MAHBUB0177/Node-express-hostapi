@@ -1,34 +1,61 @@
 const Items = require("../models/items");
 const { uploadImage } = require("./MyFileUploadControllers");
 
+// const createMyProduct = async (req, res) => {
+//   try {
+//     const { productName } = req.body;
+//     const existingProduct = await Items.findOne({ productName });
+//     if (existingProduct) {
+//       return res
+//         .status(409)
+//         .json({ isSuccess: false, message: "Product already exists" });
+//     }
+//     const imageUrl = await uploadImage(req.file);
+//     const product = new Items(req.body);
+//     product.image = imageUrl;
+//     await product.save();
+
+//     res
+//       .status(201)
+//       .send({ isSuccess: true, message: "Product added successfully" });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({
+//         isSuccess: false,
+//         error: error,
+//         message: "Something went wrong",
+//       });
+//   }
+// }; 
+
+
 const createMyProduct = async (req, res) => {
   try {
     const { productName } = req.body;
+    // Check if product already exists
     const existingProduct = await Items.findOne({ productName });
     if (existingProduct) {
       return res
         .status(409)
         .json({ isSuccess: false, message: "Product already exists" });
     }
-    const imageUrl = await uploadImage(req.file);
-    const product = new Items(req.body);
-    product.image = imageUrl;
+
+    // Log to ensure files are being received
+    // console.log("Received files:", req.files);
+    // Upload multiple images and get an array of URLs
+    const imageUrls = await uploadImage(req.files);
+
+    // Create the product and assign the image URLs
+    const product = new Items({ ...req.body, image: imageUrls });
     await product.save();
 
-    res
-      .status(201)
-      .send({ isSuccess: true, message: "Product added successfully" });
+    res.status(201).json({ isSuccess: true, message: "Product added successfully", images: imageUrls });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        isSuccess: false,
-        error: error,
-        message: "Something went wrong",
-      });
+    console.error("Error creating product:", error);
+    res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
   }
-}; 
-
+};
 
 
 const geatAllProducts = async (req, res) => {

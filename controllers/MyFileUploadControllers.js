@@ -10,16 +10,23 @@ cloudinary.config({
 });
 
 // Define the upload function
-const uploadImage = async (file) => {
-    const image = file;
-    const base64Image = Buffer.from(image.buffer).toString("base64");
-    const dataURI = `data:${image.mimetype};base64,${base64Image}`;
-
+const uploadImage = async (files) => {
     try {
-        const uploadResponse = await cloudinary.uploader.upload(dataURI);
-        return uploadResponse.url;
+        const imageUrls = await Promise.all(
+            files.map(async (file) => {
+                const base64Image = Buffer.from(file.buffer).toString("base64");
+                const dataURI = `data:${file.mimetype};base64,${base64Image}`;
+
+                // Log each file upload
+                console.log("Uploading file to Cloudinary...");
+
+                const uploadResponse = await cloudinary.uploader.upload(dataURI);
+                return uploadResponse.url; // Return the image URL after upload
+            })
+        );
+        return imageUrls; // Return an array of image URLs
     } catch (error) {
-        console.error("Error uploading image to Cloudinary", error);
+        console.error("Error uploading images to Cloudinary", error);
         throw new Error("Image upload failed");
     }
 };

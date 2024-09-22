@@ -17,9 +17,7 @@ const itemsSchema=new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    image: {
-        type: String // This will store the URL or path of the uploaded image
-    },
+    image: [{ type: String }], 
     rating:{
         type:Number,
         default:5.9
