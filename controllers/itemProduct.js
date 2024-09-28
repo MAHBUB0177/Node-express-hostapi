@@ -33,6 +33,7 @@ const { uploadImage } = require("./MyFileUploadControllers");
 const createMyProduct = async (req, res) => {
   try {
     const { productName } = req.body;
+    
     // Check if product already exists
     const existingProduct = await Items.findOne({ productName });
     if (existingProduct) {
