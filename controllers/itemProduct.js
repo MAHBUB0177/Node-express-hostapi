@@ -30,10 +30,39 @@ const { uploadImage } = require("./MyFileUploadControllers");
 // }; 
 
 
+// const createMyProduct = async (req, res) => {
+//   try {
+//     const { productName } = req.body;
+    
+//     // Check if product already exists
+//     const existingProduct = await Items.findOne({ productName });
+//     if (existingProduct) {
+//       return res
+//         .status(409)
+//         .json({ isSuccess: false, message: "Product already exists" });
+//     }
+
+//     // Log to ensure files are being received
+//     // console.log("Received files:", req.files);
+//     // Upload multiple images and get an array of URLs
+//     const imageUrls = await uploadImage(req.files);
+
+//     // Create the product and assign the image URLs
+//     const product = new Items({ ...req.body, image: imageUrls });
+//     await product.save();
+
+//     res.status(201).json({ isSuccess: true, message: "Product added successfully", images: imageUrls });
+//   } catch (error) {
+//     console.error("Error creating product:", error);
+//     res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
+//   }
+// };
+
+
 const createMyProduct = async (req, res) => {
+  console.log(req,'req+++++++++++')
   try {
     const { productName } = req.body;
-    
     // Check if product already exists
     const existingProduct = await Items.findOne({ productName });
     if (existingProduct) {
@@ -42,11 +71,8 @@ const createMyProduct = async (req, res) => {
         .json({ isSuccess: false, message: "Product already exists" });
     }
 
-    // Log to ensure files are being received
-    // console.log("Received files:", req.files);
     // Upload multiple images and get an array of URLs
     const imageUrls = await uploadImage(req.files);
-
     // Create the product and assign the image URLs
     const product = new Items({ ...req.body, image: imageUrls });
     await product.save();
@@ -58,11 +84,9 @@ const createMyProduct = async (req, res) => {
   }
 };
 
-
 const geatAllProducts = async (req, res) => {
   try {
     const {  sort, select, _id,  searchTerm } = req.query;
-    // console.log(searchTerm, '+++++searchTerm');
 
     const queryObject = {};
 

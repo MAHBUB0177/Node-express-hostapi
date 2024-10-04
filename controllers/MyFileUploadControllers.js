@@ -11,6 +11,7 @@ cloudinary.config({
 
 // Define the upload function
 const uploadImage = async (files) => {
+    console.log(files,'first++++++++++++++')
     try {
         const imageUrls = await Promise.all(
             files.map(async (file) => {
@@ -26,7 +27,6 @@ const uploadImage = async (files) => {
         );
         return imageUrls; // Return an array of image URLs
     } catch (error) {
-        console.error("Error uploading images to Cloudinary", error);
         throw new Error("Image upload failed");
     }
 };
