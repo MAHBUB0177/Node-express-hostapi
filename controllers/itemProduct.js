@@ -1,4 +1,5 @@
 const Items = require("../models/items");
+const Shops = require("../models/shops");
 const { uploadImage } = require("./MyFileUploadControllers");
 
 // const createMyProduct = async (req, res) => {
@@ -30,37 +31,10 @@ const { uploadImage } = require("./MyFileUploadControllers");
 // }; 
 
 
-// const createMyProduct = async (req, res) => {
-//   try {
-//     const { productName } = req.body;
-    
-//     // Check if product already exists
-//     const existingProduct = await Items.findOne({ productName });
-//     if (existingProduct) {
-//       return res
-//         .status(409)
-//         .json({ isSuccess: false, message: "Product already exists" });
-//     }
 
-//     // Log to ensure files are being received
-//     // console.log("Received files:", req.files);
-//     // Upload multiple images and get an array of URLs
-//     const imageUrls = await uploadImage(req.files);
-
-//     // Create the product and assign the image URLs
-//     const product = new Items({ ...req.body, image: imageUrls });
-//     await product.save();
-
-//     res.status(201).json({ isSuccess: true, message: "Product added successfully", images: imageUrls });
-//   } catch (error) {
-//     console.error("Error creating product:", error);
-//     res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
-//   }
-// };
 
 
 const createMyProduct = async (req, res) => {
-  console.log(req,'req+++++++++++')
   try {
     const { productName } = req.body;
     // Check if product already exists
@@ -137,7 +111,6 @@ const geatAllProducts = async (req, res) => {
     const totalPage = Math.ceil(totalRecord / limit);
 
     const item = await appData;
-    console.log(item,'item++++++')
 
     res.status(200).json({ item, totalRecords: totalRecord, totalPage: totalPage });
   } catch (error) {
@@ -184,7 +157,6 @@ const fetchProductById = async (req, res) => {
 const getRelatedProducts = async (req, res) => {
   try {
     const { category } = req.query;
-    console.log(req.query, 'category backend');
 
     // Check if category is provided in the query
     if (!category) {
@@ -271,4 +243,41 @@ const updateMyProduct = async (req, res) => {
   }
 };
 
-module.exports = { createMyProduct, geatAllProducts, updateMyProduct,fetchProductById,getRelatedProducts };
+
+//shops create
+const createMyShops = async (req, res) => {
+  try {
+    const { shopName } = req.body;
+    const existingShop = await Shops.findOne({ shopName });
+    if (existingShop) {
+      return res
+        .status(409)
+        .json({ isSuccess: false, message: "Shop already exists" });
+    }
+
+    const imageUrls = await uploadImage(req.files);
+    const shop = new Shops({ ...req.body, image: imageUrls });
+    await shop.save();
+
+    res.status(201).json({ isSuccess: true, message: "Product added successfully", images: imageUrls });
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
+  }
+};
+
+
+const geatAllShops = async (req, res) => {
+  try {
+    let appData = Shops.find({});
+    // Count total records
+    const totalRecord = await Shops.countDocuments({});
+    // const totalPage = Math.ceil(totalRecord / limit);
+    const shop = await appData;
+    res.status(200).json({ shop, totalRecords: totalRecord, });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
+};
+
+module.exports = { createMyProduct, geatAllProducts, updateMyProduct,fetchProductById,getRelatedProducts,createMyShops,geatAllShops };
