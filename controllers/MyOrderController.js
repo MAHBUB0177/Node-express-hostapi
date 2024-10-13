@@ -3,6 +3,7 @@ const Orders = require("../models/orders");
 const Divisions = require("../models/division");
 const Citys=require('../models/city')
 const Area=require('../models/area')
+const ConfirmOrder=require('../models/confirmOrder')
 
 const createMyOrder = async (req, res) => {
     try {
@@ -167,11 +168,64 @@ const createMyOrder = async (req, res) => {
     }
   };
 
+
+
+const confirmMyOrder = async (req, res) => {
+  try {
+    // Check if the request body is an array
+    const ordersArray = req.body;
+    if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
+      return res.status(400).json({
+        isSuccess: false,
+        message: "Request body should contain an array of order details.",
+      });
+    }
+
+    // Loop through the array and save each order separately
+    const orderPromises = ordersArray.map(async (orderItem) => {
+      // Destructure the required fields from each order object
+      const { brand, category, price, oldprice, productName, qnty, color } = orderItem;
+
+      // Create a new order
+      const newOrder = new ConfirmOrder({
+        brand,
+        category,
+        price,
+        oldprice,
+        productName,
+        quantity: qnty, // Storing `qnty` as `quantity` in the model
+        color
+      });
+
+      // Save the new order to the database
+      return newOrder.save();
+    });
+
+    // Wait for all promises to resolve (all orders to be saved)
+    await Promise.all(orderPromises);
+
+    // Return success response
+    res.status(201).json({
+      isSuccess: true,
+      message: "Orders Confirmed successfully",
+    });
+  } catch (error) {
+    console.error("Error creating order:", error);
+    res.status(500).json({
+      isSuccess: false,
+      error: error.message,
+      message: "Something went wrong",
+    });
+  }
+};
+
+
   module.exports = { createMyOrder, 
     createMyDivision,
     createMyCity,
     createMyArea,
     geatAllDivision,
     getCityByType,
-    getAreaByType
+    getAreaByType,
+    confirmMyOrder
     };
