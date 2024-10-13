@@ -3,7 +3,6 @@ const Product =require('../models/product')
 const getAllProducts=async(req,res)=>{
     // var id="66235417527a174ad295dca2"
     const{company,name,featured,sort,select,_id}=req.query;
-    console.log(company,name,sort,select,_id,'+++++++++++')
     const queryObject={}
     if(company){
         queryObject.company=company

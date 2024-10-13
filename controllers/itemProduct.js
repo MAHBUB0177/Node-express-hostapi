@@ -280,4 +280,45 @@ const geatAllShops = async (req, res) => {
   }
 };
 
-module.exports = { createMyProduct, geatAllProducts, updateMyProduct,fetchProductById,getRelatedProducts,createMyShops,geatAllShops };
+const fetchShopById = async (req, res) => {
+  try {
+    const { id } = req.params; 
+    if (!id) {
+      return res.status(400).json({
+        isSuccess: false,
+        message: "Shop ID is required",
+      });
+    }
+
+    const shop = await Shops.findById(id);
+    if (!shop) {
+      return res.status(404).json({
+        isSuccess: false,
+        data: {},
+        message: "shop not found",
+      });
+    }
+
+    res.status(200).json({
+      isSuccess: true,
+      data: shop,
+      message: "Successfully fetched data",
+    });
+  } catch (error) {
+    res.status(500).json({
+      isSuccess: false,
+      error: error.message,
+      data: {},
+      message: "Please try again",
+    });
+  }
+};
+
+module.exports = { createMyProduct, 
+  geatAllProducts,
+ updateMyProduct,
+  fetchProductById,
+  getRelatedProducts,
+  createMyShops,
+  geatAllShops,
+  fetchShopById };
