@@ -6,6 +6,7 @@ const Area=require('../models/area')
 const ConfirmOrder=require('../models/confirmOrder')
 
 const createMyOrder = async (req, res) => {
+  const { userId } = req.user;
     try {
       // Check if the request body is empty
       if (!req.body || Object.keys(req.body).length === 0) {
@@ -14,12 +15,9 @@ const createMyOrder = async (req, res) => {
           message: "Request body cannot be empty. Please provide order details.",
         });
       }
-      // Extract order data from request body
       const myOrder = req.body;
-      // Create and save the order
-      const orders = new Orders(myOrder);
+      const orders = new Orders({...myOrder,userId:userId});
       await orders.save();
-      // Return success response
       res.status(201).json({
         isSuccess: true,
         message: "Order added successfully",
@@ -33,6 +31,20 @@ const createMyOrder = async (req, res) => {
       });
     }
   };
+
+  const getOrderInfo = async (req, res) => {
+    const { userId } = req.user;
+    try {
+      let appData = await Orders.findOne({ userId }); // Fetch single order
+      if (!appData) {
+        return res.status(404).json({ message: "No order found", isSuccess: false });
+      }
+      res.status(200).json({ item: appData, isSuccess: true }); // Send as object
+    } catch (error) {
+      res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+    }
+  };
+  
  const geatAllDivision = async (req, res) => {
     try {
       let appData = Divisions.find({});
@@ -184,7 +196,7 @@ const confirmMyOrder = async (req, res) => {
     // Loop through the array and save each order separately
     const orderPromises = ordersArray.map(async (orderItem) => {
       // Destructure the required fields from each order object
-      const { brand, category, price, oldprice, productName, qnty, color } = orderItem;
+      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email } = orderItem;
 
       // Create a new order
       const newOrder = new ConfirmOrder({
@@ -194,7 +206,10 @@ const confirmMyOrder = async (req, res) => {
         oldprice,
         productName,
         quantity: qnty, // Storing `qnty` as `quantity` in the model
-        color
+        color,
+        userId,
+        name,
+        email
       });
 
       // Save the new order to the database
@@ -227,5 +242,6 @@ const confirmMyOrder = async (req, res) => {
     geatAllDivision,
     getCityByType,
     getAreaByType,
-    confirmMyOrder
+    confirmMyOrder,
+    getOrderInfo
     };

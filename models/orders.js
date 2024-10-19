@@ -2,6 +2,10 @@ const mongoose=require("mongoose")
 
 
 const OrdersSchema=new mongoose.Schema({
+    userId :{
+        type:String,
+        // required: true
+    },
     name:{
         type:String,
         required: true
@@ -12,38 +16,29 @@ const OrdersSchema=new mongoose.Schema({
     },
     houseNo:{
         type:String,
-        // required: true
+        required: true
     },
     postalCode:{
         type:Number,
-        // required: true
+        required: true
     },
     division:{
         type:String,
-        // required: true
+        required: true
      },
     
     city:{
         type:String,
-        // required: true
+        required: true
     },
     area:{
         type:String,
-        // required: true
+        required: true
     },
     address:{
         type:String,
-        // required: true
+        required: true
     }
-
-   
-
-
-
 })
-
-
-
-
 
 module.exports= mongoose.model('order',OrdersSchema)

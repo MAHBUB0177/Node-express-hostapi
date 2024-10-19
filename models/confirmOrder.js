@@ -27,6 +27,18 @@ const confirmOrderSchema=new mongoose.Schema({
     },
     color:{
         type:String,
+    },
+    userId:{
+        type:String,
+        required:true
+    },
+    name:{
+        type:String,
+        required:true
+    },
+    email:{
+        type:String,
+        required:true
     }
 
 

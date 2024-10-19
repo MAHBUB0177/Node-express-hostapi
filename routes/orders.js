@@ -2,11 +2,12 @@
 
 const express=require('express');
 const router=express.Router()
-const { createMyOrder, createMyDivision, createMyCity, createMyArea, geatAllDivision, getCityByType, getAreaByType, confirmMyOrder } = require('../controllers/MyOrderController');
+const { createMyOrder, createMyDivision, createMyCity, createMyArea, geatAllDivision, getCityByType, getAreaByType, confirmMyOrder, getOrderInfo } = require('../controllers/MyOrderController');
 const verifyToken = require('../middleware/auth');
 
 
 router.route('/orders').post(verifyToken,createMyOrder);
+router.route('/orders/fetch').get(verifyToken,getOrderInfo);
 router.route('/division').post(verifyToken,createMyDivision);
 router.route('/division/fetch').get(geatAllDivision);
 router.route('/city').post(verifyToken,createMyCity);

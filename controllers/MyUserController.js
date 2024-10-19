@@ -17,7 +17,6 @@ const registerUser = async (req, res) => {
   }
 
   try {
-    // Check if email, name, and password are present in the request body
     if (!email || !name || !password) {
       return res.status(400).json({
         isSuccess: false,
