@@ -1,5 +1,7 @@
 const Items = require("../models/items");
 const Shops = require("../models/shops");
+const Category=require('../models/category')
+const Brand=require('../models/brand')
 const { uploadImage } = require("./MyFileUploadControllers");
 
 // const createMyProduct = async (req, res) => {
@@ -314,6 +316,90 @@ const fetchShopById = async (req, res) => {
   }
 };
 
+
+const createMyProductCategory = async (req, res) => {
+  try {
+    const { category } = req.body;
+    const existingCategory = await Category.findOne({ category });
+    if (existingCategory) {
+      return res
+        .status(409)
+        .json({ isSuccess: false, message: "Category already exists" });
+    }
+
+    const categoryitem = new Category({ ...req.body});
+    await categoryitem.save();
+
+    res.status(201).json({ isSuccess: true, message: "Category added successfully"});
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
+  }
+};
+
+const getCategoryByType = async (req, res) => {
+  try {
+    const { productName } = req.query;
+
+    if (!productName) {
+      return res.status(400).json({ message: "productName query parameter is required", isSuccess: false });
+    }
+
+    const lowercaseProductName = productName.toLowerCase();
+    // Use regular expression with case-insensitive option 'i'
+    let appData = Category.find({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    // Count the total records that match
+    const totalRecord = await Category.countDocuments({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+
+    const item = await appData;
+
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+  }
+};
+
+
+
+
+const createMyProductBrand = async (req, res) => {
+  try {
+    const { brand } = req.body;
+    const existingBrand = await Brand.findOne({ brand });
+    if (existingBrand) {
+      return res
+        .status(409)
+        .json({ isSuccess: false, message: "Brand already exists" });
+    }
+
+    const branditem = new Brand({ ...req.body});
+    await branditem.save();
+
+    res.status(201).json({ isSuccess: true, message: "Brand added successfully"});
+  } catch (error) {
+    console.error("Error creating product:", error);
+    res.status(500).json({ isSuccess: false, error, message: "Something went wrong" });
+  }
+};
+
+const getBrandByType = async (req, res) => {
+  try {
+    const { productName } = req.query;
+    if (!productName) {
+      return res.status(400).json({ message: "productName query parameter is required", isSuccess: false });
+    }
+    const lowercaseProductName = productName.toLowerCase();
+    let appData = Brand.find({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    // Count the total records that match
+    const totalRecord = await Brand.countDocuments({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    const item = await appData;
+
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+  }
+};
+
 module.exports = { createMyProduct, 
   geatAllProducts,
  updateMyProduct,
@@ -321,4 +407,9 @@ module.exports = { createMyProduct,
   getRelatedProducts,
   createMyShops,
   geatAllShops,
-  fetchShopById };
+  fetchShopById,
+  createMyProductCategory,
+  createMyProductBrand ,
+  getBrandByType,
+  getCategoryByType
+};
