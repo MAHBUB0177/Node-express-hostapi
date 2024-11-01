@@ -69,16 +69,6 @@ const geatAllProducts = async (req, res) => {
     if (_id) {
       queryObject._id = _id;
     }
-    
-    // if (productName) {
-    //   queryObject.productName = { $regex: productName, $options: "i" };
-    // }
-    // if (category) {
-    //   queryObject.category = category;
-    // }
-    // if (brand) {
-    //   queryObject.brand = brand;
-    // }
 
     // If searchTerm is provided, it should match either brand or category
     if (searchTerm) {
@@ -340,16 +330,19 @@ const createMyProductCategory = async (req, res) => {
 const getCategoryByType = async (req, res) => {
   try {
     const { productName } = req.query;
+    let queryObject = {};
 
-    if (!productName) {
-      return res.status(400).json({ message: "productName query parameter is required", isSuccess: false });
+    // If productName is provided, filter by productName using regex
+    if (productName) {
+      const lowercaseProductName = productName.toLowerCase();
+      queryObject.productName = { $regex: new RegExp("^" + lowercaseProductName, "i") };
     }
 
-    const lowercaseProductName = productName.toLowerCase();
-    // Use regular expression with case-insensitive option 'i'
-    let appData = Category.find({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    // Find data based on queryObject (either all or filtered)
+    const appData = Category.find(queryObject);
+
     // Count the total records that match
-    const totalRecord = await Category.countDocuments({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    const totalRecord = await Category.countDocuments(queryObject);
 
     const item = await appData;
 
@@ -385,13 +378,20 @@ const createMyProductBrand = async (req, res) => {
 const getBrandByType = async (req, res) => {
   try {
     const { productName } = req.query;
-    if (!productName) {
-      return res.status(400).json({ message: "productName query parameter is required", isSuccess: false });
+    let queryObject = {};
+
+    // If productName is provided, filter by productName using regex
+    if (productName) {
+      const lowercaseProductName = productName.toLowerCase();
+      queryObject.productName = { $regex: new RegExp("^" + lowercaseProductName, "i") };
     }
-    const lowercaseProductName = productName.toLowerCase();
-    let appData = Brand.find({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+
+    // Find brands based on queryObject (either all or filtered)
+    const appData = Brand.find(queryObject);
+
     // Count the total records that match
-    const totalRecord = await Brand.countDocuments({ productName: { $regex: new RegExp("^" + lowercaseProductName, "i") } });
+    const totalRecord = await Brand.countDocuments(queryObject);
+
     const item = await appData;
 
     res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
@@ -399,6 +399,7 @@ const getBrandByType = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
   }
 };
+
 
 module.exports = { createMyProduct, 
   geatAllProducts,
