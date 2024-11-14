@@ -32,6 +32,35 @@ const createMyOrder = async (req, res) => {
     }
   };
 
+
+
+  const saveOrderInfo = async (req, res) => {
+   
+      try {
+        // Check if the request body is empty
+        if (!req.body || Object.keys(req.body).length === 0) {
+          return res.status(400).json({
+            isSuccess: false,
+            message: "Request body cannot be empty. Please provide order details.",
+          });
+        }
+        const saveOrderinfo = req.body;
+        const orders = new Orders({...saveOrderinfo,active:true});
+        await orders.save();
+        res.status(201).json({
+          isSuccess: true,
+          message: "Order added successfully",
+        });
+      } catch (error) {
+        console.error("Error creating order:", error);
+        res.status(500).json({
+          isSuccess: false,
+          error: error.message,
+          message: "Something went wrong",
+        });
+      }
+    };
+
   const getOrderInfo = async (req, res) => {
     const { userId } = req.user;
     try {
