@@ -35,7 +35,7 @@ const createMyOrder = async (req, res) => {
   const getOrderInfo = async (req, res) => {
     const { userId } = req.user;
     try {
-      let appData = await Orders.findOne({ userId }); // Fetch single order
+      let appData = await Orders.find({ userId }); // Fetch single order
       if (!appData) {
         return res.status(404).json({ message: "No order found", isSuccess: false });
       }
@@ -192,6 +192,7 @@ const confirmMyOrder = async (req, res) => {
         message: "Request body should contain an array of order details.",
       });
     }
+
 
     // Loop through the array and save each order separately
     const orderPromises = ordersArray.map(async (orderItem) => {
