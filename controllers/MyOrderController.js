@@ -226,7 +226,7 @@ const confirmMyOrder = async (req, res) => {
     // Loop through the array and save each order separately
     const orderPromises = ordersArray.map(async (orderItem) => {
       // Destructure the required fields from each order object
-      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email } = orderItem;
+      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
 
       // Create a new order
       const newOrder = new ConfirmOrder({
@@ -239,7 +239,11 @@ const confirmMyOrder = async (req, res) => {
         color,
         userId,
         name,
-        email
+        email,
+        shippingUserName,
+        shippingPhone,
+        shippingHouseNo,
+        shippingCity,
       });
 
       // Save the new order to the database

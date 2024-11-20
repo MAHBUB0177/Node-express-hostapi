@@ -39,7 +39,24 @@ const confirmOrderSchema=new mongoose.Schema({
     email:{
         type:String,
         required:true
-    }
+    },
+    shippingUserName:{
+        type:String,
+        required:true
+    },
+    shippingPhone:{
+        type:Number,
+        required:false
+    },
+    shippingHouseNo:{
+        type:String,
+        required:true
+    },
+    shippingCity:{
+        type:String,
+        required:true
+    },
+
 
 
 })
