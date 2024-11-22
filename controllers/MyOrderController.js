@@ -5,6 +5,9 @@ const Citys=require('../models/city')
 const Area=require('../models/area')
 const ConfirmOrder=require('../models/confirmOrder')
 
+const Stripe = require('stripe');
+const stripe = Stripe('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
+
 const createMyOrder = async (req, res) => {
   const { userId } = req.user;
     try {
@@ -269,6 +272,35 @@ const confirmMyOrder = async (req, res) => {
 };
 
 
+ const confirmMyPayment= async (req, res) => {
+  const {productName, unit_amount, quantity} = req.body;
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: 'Product Name',
+            },
+            unit_amount: unit_amount,
+          },
+          quantity: quantity,
+        },
+      ],
+      mode: 'payment',
+      success_url: 'http://localhost:3000/success',
+      cancel_url: 'http://localhost:3000/cancel',
+    });
+
+    res.json({ id: session.id });
+  } catch (error) {
+    res.status(500).send(`Error creating checkout session: ${error.message}`);
+  }
+};
+
   module.exports = { createMyOrder, 
     createMyDivision,
     createMyCity,
@@ -277,5 +309,6 @@ const confirmMyOrder = async (req, res) => {
     getCityByType,
     getAreaByType,
     confirmMyOrder,
-    getOrderInfo
+    getOrderInfo,
+    confirmMyPayment
     };
