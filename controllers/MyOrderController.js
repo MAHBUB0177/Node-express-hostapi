@@ -6,7 +6,7 @@ const Area=require('../models/area')
 const ConfirmOrder=require('../models/confirmOrder')
 
 const Stripe = require('stripe');
-const stripe = Stripe('sk_test_4eC39HqLyjWDarjtT1zdp7dc');
+const stripe = Stripe(process.env.STRIPE_API_URL);
 
 const createMyOrder = async (req, res) => {
   const { userId } = req.user;
