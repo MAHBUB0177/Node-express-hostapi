@@ -34,7 +34,7 @@ const registerUser = async (req, res) => {
     await user.save();
     transporter.sendMail(
       generateMailOptions(
-        "peartalam@gmail.com",
+        "mahbub15-9283@diu.edu.bd",
         "User Registration Mail",
         "",
         userEmail(name, password)

@@ -230,7 +230,6 @@ const confirmMyOrder = async (req, res) => {
     const orderPromises = ordersArray.map(async (orderItem) => {
       // Destructure the required fields from each order object
       const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
-
       // Create a new order
       const newOrder = new ConfirmOrder({
         brand,
