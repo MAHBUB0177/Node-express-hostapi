@@ -9,7 +9,6 @@ const {userEmail } = require("../templates/emailtemplates");
 
 const registerUser = async (req, res) => {
   const { email, name, password } = req.body;
-  // Check if request body is empty
   if (!req.body || Object.keys(req.body).length === 0) {
     return res
       .status(400)
@@ -197,7 +196,7 @@ const refreshToken = async (req, res) => {
 const updateUser = async (req, res) => {
   const userId = req.user.userId; // Extract user ID from the token
   // const {userId }= req.body;
-  const updateData = req.body; // Get the update data from the request body
+  const updateData = req.body; 
 
   try {
     const user = await User.findById(userId);

@@ -11,7 +11,6 @@ const stripe = Stripe(process.env.STRIPE_API_URL);
 const createMyOrder = async (req, res) => {
   const { userId } = req.user;
     try {
-      // Check if the request body is empty
       if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({
           isSuccess: false,
@@ -40,7 +39,6 @@ const createMyOrder = async (req, res) => {
   const saveOrderInfo = async (req, res) => {
    
       try {
-        // Check if the request body is empty
         if (!req.body || Object.keys(req.body).length === 0) {
           return res.status(400).json({
             isSuccess: false,
@@ -67,11 +65,11 @@ const createMyOrder = async (req, res) => {
   const getOrderInfo = async (req, res) => {
     const { userId } = req.user;
     try {
-      let appData = await Orders.find({ userId }); // Fetch single order
+      let appData = await Orders.find({ userId });
       if (!appData) {
         return res.status(404).json({ message: "No order found", isSuccess: false });
       }
-      res.status(200).json({ item: appData, isSuccess: true }); // Send as object
+      res.status(200).json({ item: appData, isSuccess: true }); 
     } catch (error) {
       res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
     }
@@ -91,7 +89,6 @@ const createMyOrder = async (req, res) => {
 
   const createMyDivision = async (req, res) => {
     try {
-      // Check if the request body is empty
       if (!req.body || Object.keys(req.body).length === 0) {
         return res.status(400).json({
           isSuccess: false,
