@@ -11,8 +11,6 @@ const order_route =require('./routes/orders')
 // const order_route = require('/routes/orders')
 const client = require('./helper/init_redis');
 
-
-
 app.use(morgan('dev'))
 app.use(express.json());
 app.use(cors());

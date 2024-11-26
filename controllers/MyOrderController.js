@@ -268,24 +268,29 @@ const confirmMyOrder = async (req, res) => {
 };
 
 
- const confirmMyPayment= async (req, res) => {
-  const {productName, unit_amount, quantity} = req.body;
+
+const confirmMyPayment = async (req, res) => {
+  const { payload } = req.body;
+
+  if (!payload || !Array.isArray(payload)) {
+    return res.status(400).json({ error: 'Invalid payload format.' });
+  }
 
   try {
+    const line_items = payload.map((item) => ({
+      price_data: {
+        currency: 'BDT',
+        product_data: {
+          name: item.product_name || 'Unknown Product', // Dynamic product name
+        },
+        unit_amount: item.unit_amount * 100, // Convert Taka to poisha
+      },
+      quantity: item.quantity,
+    }));
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'BDT',
-            product_data: {
-              name: 'Product Name',
-            },
-            unit_amount: unit_amount,
-          },
-          quantity: quantity,
-        },
-      ],
+      line_items,
       mode: 'payment',
       success_url: 'http://localhost:3000/success',
       cancel_url: 'http://localhost:3000/cancel',
@@ -293,9 +298,12 @@ const confirmMyOrder = async (req, res) => {
 
     res.json({ id: session.id });
   } catch (error) {
+    console.error('Error creating checkout session:', error.message);
     res.status(500).send(`Error creating checkout session: ${error.message}`);
   }
 };
+
+
 
   module.exports = { createMyOrder, 
     createMyDivision,
