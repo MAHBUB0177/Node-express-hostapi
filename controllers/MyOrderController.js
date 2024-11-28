@@ -246,7 +246,7 @@ const confirmMyOrder = async (req, res) => {
       });
 
       // Save the new order to the database
-      return newOrder.save();
+      return newOrder.save(); 
     });
 
     // Wait for all promises to resolve (all orders to be saved)
