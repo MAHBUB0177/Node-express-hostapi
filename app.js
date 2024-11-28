@@ -4,6 +4,7 @@ const morgan = require('morgan')
 const app=express()
 const cors = require('cors');
 const connectDB=require("./db/connect")
+const background_routes = require('./routes/bgimage')
 const products_routes = require('./routes/products')
 const items_routes=require('./routes/items')
 const user_routes = require('./routes/user')
@@ -21,6 +22,7 @@ res.send('Hi, I Am Live')
 });
 
 //product routes
+app.use('/api/bgimage',background_routes)
 app.use('/api/products',products_routes)
 app.use('/api/items',items_routes)
 app.use('/api/cart',order_route)

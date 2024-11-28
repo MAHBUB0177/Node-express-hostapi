@@ -31,7 +31,27 @@ const uploadImage = async (files) => {
     }
 };
 
+
+const uploadSingleImage = async (file) => {
+    try {
+        const base64Image = Buffer.from(file.buffer).toString("base64");
+        const dataURI = `data:${file.mimetype};base64,${base64Image}`;
+
+        // Log the upload process
+        console.log("Uploading file to Cloudinary...");
+
+        const uploadResponse = await cloudinary.uploader.upload(dataURI);
+
+        // Return the image URL after upload
+        return uploadResponse.url;
+    } catch (error) {
+        console.error("Image upload failed:", error);
+        throw new Error("Image upload failed");
+    }
+};
+
 // Export the upload function
 module.exports = {
-    uploadImage
+    uploadImage,
+    uploadSingleImage
 };
