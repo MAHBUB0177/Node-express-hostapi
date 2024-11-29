@@ -40,6 +40,14 @@ const confirmOrderSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    shippingFee:{
+        type:Number,
+        required:true
+    },
+    grandTotal:{
+        type:Number,
+        required:true
+    },
     shippingUserName:{
         type:String,
         required:true

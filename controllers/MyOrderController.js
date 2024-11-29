@@ -226,7 +226,7 @@ const confirmMyOrder = async (req, res) => {
     // Loop through the array and save each order separately
     const orderPromises = ordersArray.map(async (orderItem) => {
       // Destructure the required fields from each order object
-      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
+      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingFee,grandTotal,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
       // Create a new order
       const newOrder = new ConfirmOrder({
         brand,
@@ -239,6 +239,8 @@ const confirmMyOrder = async (req, res) => {
         userId,
         name,
         email,
+        shippingFee,
+        grandTotal,
         shippingUserName,
         shippingPhone,
         shippingHouseNo,
@@ -283,7 +285,7 @@ const confirmMyPayment = async (req, res) => {
         product_data: {
           name: item.product_name || 'Unknown Product', // Dynamic product name
         },
-        unit_amount: item.unit_amount * 100, // Convert Taka to poisha
+        unit_amount: item.unit_amount * 100  , // Convert Taka to poisha
       },
       quantity: item.quantity,
     }));

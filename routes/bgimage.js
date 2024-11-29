@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { createMyBgImage } = require('../controllers/MybackgroundController');
+const { createMyBgImage, geatAllBgImage } = require('../controllers/MybackgroundController');
 const verifyToken = require('../middleware/auth');
 
 // Configure Multer storage
@@ -15,5 +15,6 @@ const upload = multer({
 
 // Route for single image upload
 router.post('/create', verifyToken, upload.single("imageFile"), createMyBgImage);
+router.get('/getAllBgIMage', geatAllBgImage)
 
 module.exports = router;

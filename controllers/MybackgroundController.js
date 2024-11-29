@@ -22,4 +22,18 @@ const createMyBgImage = async (req, res) => {
     }
 };
 
-module.exports = { createMyBgImage };
+
+
+  const geatAllBgImage = async (req, res) => {
+    try {
+      let appData = Bgimage.find({});
+      const totalRecord = await Bgimage.countDocuments({ });
+      const item = await appData;
+  
+      res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+    } catch (error) {
+      res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+    }
+  };
+
+module.exports = { createMyBgImage,geatAllBgImage };
