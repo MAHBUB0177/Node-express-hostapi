@@ -7,31 +7,24 @@ const { generateMailOptions } = require("../helper/emailOptions");
 const { transporter } = require("../helper/emailConfig");
 const {userEmail } = require("../templates/emailtemplates");
 
+
+
 const registerUser = async (req, res) => {
   const { email, name, password } = req.body;
-  if (!req.body || Object.keys(req.body).length === 0) {
-    return res
-      .status(400)
-      .json({ isSuccess: false, message: "Request body is empty" });
+  if (!email || !name || !password) {
+    return res.status(400).json({ isSuccess: false, message: "Missing fields" });
   }
 
   try {
-    if (!email || !name || !password) {
-      return res.status(400).json({
-        isSuccess: false,
-        message: "Email, name, or password is missing in the request body",
-      });
-    }
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
-      return res
-        .status(201)
-        .json({ isSuccess: false, message: "User Is Alredy Registered" });
+      return res.status(201).json({ isSuccess: false, message: "User already registered" });
     }
+
 
     const user = new User({ email, name, password });
     await user.save();
-    transporter.sendMail(
+        transporter.sendMail(
       generateMailOptions(
         "mahbub15-9283@diu.edu.bd",
         "User Registration Mail",
@@ -46,37 +39,29 @@ const registerUser = async (req, res) => {
         }
       }
     );
-    return res
-      .status(200)
-      .json({ isSuccess: true, message: "User Registered Successfully" });
+
+    res.status(200).json({ isSuccess: true, message: "User registered successfully" });
   } catch (error) {
-    return res
-      .status(500)
-      .json({ isSuccess: false, error: error, message: "Registration failed" });
+    console.error("Registration error:", error);
+    res.status(500).json({ isSuccess: false, message: "Internal server error" });
   }
 };
-
-//calculate access token expiration time
-const tokenExpiration = new Date();
-// tokenExpiration.setHours(tokenExpiration.getHours() + 1);
-tokenExpiration.setMinutes(tokenExpiration.getMinutes() + 2);
-
-//calculate refresh token expiration time
-// const refreshTokenExpiration = new Date();
-// refreshTokenExpiration.setHours(refreshTokenExpiration.getHours() + 48);
-const refreshTokenExpiration = new Date();
-refreshTokenExpiration.setMinutes(refreshTokenExpiration.getMinutes() + 4);
 
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ isSuccess: false, message: "Missing fields" });
+  }
+
   try {
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({
         isSuccess: false,
+        message: "Invalid credentials",
         error: "Authentication Failed",
-        message: "Email or password is wrong",
       });
     }
 
@@ -84,112 +69,124 @@ const loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         isSuccess: false,
+        message: "Invalid credentials",
         error: "Authentication failed",
-        message: "Email or password is wrong",
       });
     }
 
-    const accessToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30m",
-    });
+    // Calculate token expiration times
+    const accessTokenExpirationTime = 20; // Access token lifespan in minutes
+    const refreshTokenExpirationTime = 5 * 60; // Refresh token lifespan in minutes (5 hours = 300 minutes)
+
+    // const now = new Date();
+    // const tokenExpiration = new Date(now.getTime() + accessTokenExpirationTime * 60 * 1000); // Current time + 2 minutes
+    // const refreshTokenExpiration = new Date(now.getTime() + refreshTokenExpirationTime * 60 * 1000); // Current time + 5 minutes
+
+    //wt get 2 argumnet to create accesstoken(payload,secret,options)
+    const accessToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: `${accessTokenExpirationTime}m` } // Set token lifespan 
+    );
+
     const refreshToken = jwt.sign(
       { userId: user._id },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "50m" }
+      { expiresIn: `${refreshTokenExpirationTime}m` } // Set token lifespan
     );
-
-    // Modified response object to include only email and name
-    const userData = {
-      email: user.email,
-      name: user.name,
-    };
-    const responseData = { accessToken, refreshToken, user: userData ,tokenExpiration,refreshTokenExpiration};
-    // await client.set("authKey", JSON.stringify(responseData), "EX", 86400); // Set the data with a 24-hour expiration
-    // console.log("Value set successfully");
-
-    // const value = await client.get("authKey");
-    // const storedData = JSON.parse(value);
 
     res.status(200).json({
       isSuccess: true,
-      //   data: { accessToken, refreshToken, user: userData },
-      data: responseData,
-      message: "Successfully logged in",
+      data: {
+        accessToken,
+        refreshToken,
+        accessTokenExpirationTime: `${accessTokenExpirationTime} minutes`,
+        refreshTokenExpirationTime: `${refreshTokenExpirationTime / 60} hours`, // Convert to hours for response
+        user: { email: user.email, name: user.name },
+      },
+      message: "Login successful",
     });
   } catch (error) {
-    console.error(error); // Log the error for debugging
-    res.status(500).json({
-      isSuccess: false,
-      error: "Authentication failed",
-      message: "An internal server error occurred",
-    });
+    console.error("Login error:", error);
+    res.status(500).json({ isSuccess: false, message: "Internal server error" });
   }
 };
-
 const refreshToken = async (req, res) => {
   const { refreshToken } = req.body;
   try {
+    // Validate the presence of refreshToken
     if (!refreshToken) {
-      return res
-        .status(401)
-        .json({
-          isSuccess: false,
-          error: "Invalid refresh token",
-          message: "Invalid refresh token",
-        });
+      return res.status(401).json({
+        isSuccess: false,
+        error: "Invalid refresh token",
+        message: "Refresh token is missing",
+      });
     }
 
+    // Verify the refresh token
     jwt.verify(
       refreshToken,
       process.env.REFRESH_TOKEN_SECRET,
-      async (error, user) => {
+      async (error, decoded) => {
         if (error) {
-          return res
-            .status(403)
-            .json({
-              isSuccess: false,
-              error,
-              message: "Invalid refresh token",
-            });
+          return res.status(403).json({
+            isSuccess: false,
+            error,
+            message: "Refresh token is invalid or expired",
+          });
         }
 
-        const userInfo = await User.findOne({ _id: user.userId });
+        // Check if refresh token has expired
+        const now = new Date();
+        const refreshTokenExpiration = new Date(decoded.exp * 1000); //refreshtoken `exp` in JWT payload is in seconds
+        if (now >= refreshTokenExpiration) {
+          return res.status(403).json({
+            isSuccess: false,
+            error: "Refresh token expired",
+            message: "Refresh token has expired",
+          });
+        }
+
+        // Retrieve user information
+        const userInfo = await User.findOne({ _id: decoded.userId });
         if (!userInfo) {
-          return res
-            .status(403)
-            .json({
-              isSuccess: false,
-              error: "User not found",
-              message: "User not found",
-            });
+          return res.status(404).json({
+            isSuccess: false,
+            error: "User not found",
+            message: "User associated with the token not found",
+          });
         }
 
+        // Generate new tokens
         const newAccessToken = jwt.sign(
-          { userId: user.userId },
+          { userId: decoded.userId },
           process.env.JWT_SECRET,
-          { expiresIn: "2min" }
+          { expiresIn: "20m" } // Access token lifespan
         );
-        const newRefreshToken = jwt.sign(
-          { userId: user.userId },
-          process.env.REFRESH_TOKEN_SECRET,
-          { expiresIn: "4m" }
-        );
+        // const newRefreshToken = jwt.sign(
+        //   { userId: decoded.userId },
+        //   process.env.REFRESH_TOKEN_SECRET,
+        //   { expiresIn: "5m" } // Refresh token lifespan
+        // );
 
         res.status(200).json({
           isSuccess: true,
           data: {
             accessToken: newAccessToken,
-            refreshToken: newRefreshToken,
+            refreshToken: refreshToken,
             user: userInfo,
           },
-          message: "Successfully refreshed token",
+          message: "Tokens refreshed successfully",
         });
       }
     );
   } catch (error) {
-    res
-      .status(500)
-      .json({ isSuccess: false, error, message: "Authentication failed" });
+    console.error("Error in refreshing token:", error);
+    res.status(500).json({
+      isSuccess: false,
+      error: "Internal server error",
+      message: "Failed to refresh token",
+    });
   }
 };
 
