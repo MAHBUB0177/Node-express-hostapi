@@ -174,7 +174,7 @@ const refreshToken = async (req, res) => {
           data: {
             accessToken: newAccessToken,
             refreshToken: refreshToken,
-            user: userInfo,
+            user: { email: userInfo.email, name: userInfo.name },
           },
           message: "Tokens refreshed successfully",
         });
