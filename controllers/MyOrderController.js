@@ -5,6 +5,10 @@ const Citys=require('../models/city')
 const Area=require('../models/area')
 const ConfirmOrder=require('../models/confirmOrder')
 
+const PDFDocument = require("pdfkit");
+const fs = require("fs");
+const nodemailer = require("nodemailer");
+
 const Stripe = require('stripe');
 const stripe = Stripe(process.env.STRIPE_API_URL);
 
@@ -252,8 +256,16 @@ const confirmMyOrder = async (req, res) => {
     });
 
     // Wait for all promises to resolve (all orders to be saved)
-    await Promise.all(orderPromises);
+    // await Promise.all(orderPromises);//previous
+    const savedOrders = await Promise.all(orderPromises);
 
+    // Generate Invoice PDF
+    const pdfPath = await generateInvoiceWithPDFKit(savedOrders);
+  // Send Email with the Invoice PDF
+    await sendEmailWithInvoice(pdfPath, ordersArray[0].email);
+
+  // Cleanup: Remove the generated PDF
+  fs.unlinkSync(pdfPath);
     // Return success response
     res.status(201).json({
       isSuccess: true,
@@ -267,6 +279,47 @@ const confirmMyOrder = async (req, res) => {
       message: "Something went wrong",
     });
   }
+};
+
+
+// Helper: Generate Invoice PDF with PDFKit
+const generateInvoiceWithPDFKit = async (orders) => {
+  return new Promise((resolve, reject) => {
+    const doc = new PDFDocument();
+    const filePath = `./invoice_${Date.now()}.pdf`;
+
+    const writeStream = fs.createWriteStream(filePath);
+    doc.pipe(writeStream);
+
+    // Add Header
+    doc.fontSize(18).text("Invoice", { align: "center" });
+    doc.moveDown();
+
+    // Add Order Details
+    orders.forEach((order, index) => {
+      doc
+        .fontSize(12)
+        .text(
+          `${index + 1}. ${order.productName} - ${order.quantity} x ${order.price} = ${order.quantity * order.price}`
+        )
+        .moveDown(0.5);
+    });
+
+    // Add Total
+    const total = orders.reduce((sum, order) => sum + order.quantity * order.price, 0);
+    doc.moveDown().fontSize(14).text(`Grand Total: $${total.toFixed(2)}`, { align: "right" });
+
+    // Finalize the PDF and save
+    doc.end();
+
+    writeStream.on("finish", () => {
+      resolve(filePath);
+    });
+
+    writeStream.on("error", (err) => {
+      reject(err);
+    });
+  });
 };
 
 
