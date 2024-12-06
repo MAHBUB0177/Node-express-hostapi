@@ -8,8 +8,12 @@ const ConfirmOrder=require('../models/confirmOrder')
 const PDFDocument = require("pdfkit");
 const fs = require("fs");
 const nodemailer = require("nodemailer");
+const os = require("os");
+const path = require("path");
 
 const Stripe = require('stripe');
+const { transporter } = require("../helper/emailConfig");
+const { generateMailOptions } = require("../helper/emailOptions");
 const stripe = Stripe(process.env.STRIPE_API_URL);
 
 const createMyOrder = async (req, res) => {
@@ -215,9 +219,100 @@ const createMyOrder = async (req, res) => {
 
 
 
+// const confirmMyOrder = async (req, res) => {
+//   try {
+//     // Check if the request body is an array
+//     const ordersArray = req.body;
+//     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
+//       return res.status(400).json({
+//         isSuccess: false,
+//         message: "Request body should contain an array of order details.",
+//       });
+//     }
+
+
+//     // Loop through the array and save each order separately
+//     const orderPromises = ordersArray.map(async (orderItem) => {
+//       // Destructure the required fields from each order object
+//       const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingFee,grandTotal,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
+//       // Create a new order
+//       const newOrder = new ConfirmOrder({
+//         brand,
+//         category,
+//         price,
+//         oldprice,
+//         productName,
+//         quantity: qnty, // Storing `qnty` as `quantity` in the model
+//         color,
+//         userId,
+//         name,
+//         email,
+//         shippingFee,
+//         grandTotal,
+//         shippingUserName,
+//         shippingPhone,
+//         shippingHouseNo,
+//         shippingCity,
+//       });
+
+//       // Save the new order to the database
+//       return newOrder.save(); 
+//     });
+
+//     // Wait for all promises to resolve (all orders to be saved)
+//     // await Promise.all(orderPromises);//previous
+//     const savedOrders = await Promise.all(orderPromises);
+
+//     // Generate Invoice PDF
+//     const pdfPath = await generateInvoiceWithPDFKit(savedOrders);
+//   // Send Email with the Invoice PDF
+//     // await sendEmailWithInvoice(pdfPath, ordersArray[0].email);
+
+//      // Send Email with the Invoice PDF
+//    await  transporter.sendMail(
+//       generateMailOptions(
+//         "mahbub15-9283@diu.edu.bd", // Customer email
+//         "Your Order Invoice",
+//         "Thank you for your order! Please find your invoice attached.",
+//         null, // No custom HTML content
+//         pdfPath
+//       ),
+//       (error, info) => {
+//         if (error) {
+//           console.error("Error occurred while sending email:", error);
+//         } else {
+//           console.log("Email sent successfully:", info.response);
+//         }
+//       }
+//     );
+
+   
+
+//       // Cleanup: Remove the generated PDF
+//       fs.unlink(pdfPath, (err) => {
+//         if (err) console.error("Failed to delete PDF file:", err);
+//       });
+  
+//     // Return success response
+//     res.status(201).json({
+//       isSuccess: true,
+//       message: "Orders confirmed successfully and invoice sent via email.",
+//     });
+//   } catch (error) {
+//     console.error("Error creating order:", error);
+//     res.status(500).json({
+//       isSuccess: false,
+//       error: error.message,
+//       message: "Something went wrong",
+//     });
+//   }
+// };
+
+
+// Helper: Generate Invoice PDF with PDFKit
+
 const confirmMyOrder = async (req, res) => {
   try {
-    // Check if the request body is an array
     const ordersArray = req.body;
     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
       return res.status(400).json({
@@ -226,19 +321,16 @@ const confirmMyOrder = async (req, res) => {
       });
     }
 
-
-    // Loop through the array and save each order separately
     const orderPromises = ordersArray.map(async (orderItem) => {
-      // Destructure the required fields from each order object
-      const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingFee,grandTotal,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
-      // Create a new order
+      const { brand, category, price, oldprice, productName, qnty, color, userId, name, email, shippingFee, grandTotal, shippingUserName, shippingPhone, shippingHouseNo, shippingCity } = orderItem;
+
       const newOrder = new ConfirmOrder({
         brand,
         category,
         price,
         oldprice,
         productName,
-        quantity: qnty, // Storing `qnty` as `quantity` in the model
+        quantity: qnty,
         color,
         userId,
         name,
@@ -251,25 +343,40 @@ const confirmMyOrder = async (req, res) => {
         shippingCity,
       });
 
-      // Save the new order to the database
-      return newOrder.save(); 
+      return newOrder.save();
     });
 
-    // Wait for all promises to resolve (all orders to be saved)
-    // await Promise.all(orderPromises);//previous
     const savedOrders = await Promise.all(orderPromises);
 
     // Generate Invoice PDF
     const pdfPath = await generateInvoiceWithPDFKit(savedOrders);
-  // Send Email with the Invoice PDF
-    await sendEmailWithInvoice(pdfPath, ordersArray[0].email);
 
-  // Cleanup: Remove the generated PDF
-  fs.unlinkSync(pdfPath);
-    // Return success response
+    // Send Email with the Invoice PDF
+    transporter.sendMail(
+      generateMailOptions(
+        "mahbub15-9283@diu.edu.bd",
+        "Your Order Invoice",
+        "Thank you for your order! Please find your invoice attached.",
+        null, // No custom HTML
+        pdfPath
+      ),
+      (error, info) => {
+        if (error) {
+          console.error("Error occurred while sending email:", error);
+        } else {
+          console.log("Email sent successfully:", info.response);
+        }
+
+        // Cleanup: Remove the generated PDF
+        fs.unlink(pdfPath, (err) => {
+          if (err) console.error("Failed to delete PDF file:", err);
+        });
+      }
+    );
+
     res.status(201).json({
       isSuccess: true,
-      message: "Orders Confirmed successfully",
+      message: "Orders confirmed successfully and invoice sent via email.",
     });
   } catch (error) {
     console.error("Error creating order:", error);
@@ -281,19 +388,16 @@ const confirmMyOrder = async (req, res) => {
   }
 };
 
-
-// Helper: Generate Invoice PDF with PDFKit
 const generateInvoiceWithPDFKit = async (orders) => {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument();
-    const filePath = `./invoice_${Date.now()}.pdf`;
-
+    const filePath = path.join(os.tmpdir(), `invoice_${Date.now()}.pdf`);
     const writeStream = fs.createWriteStream(filePath);
+
     doc.pipe(writeStream);
 
     // Add Header
-    doc.fontSize(18).text("Invoice", { align: "center" });
-    doc.moveDown();
+    doc.fontSize(18).text("Invoice", { align: "center" }).moveDown();
 
     // Add Order Details
     orders.forEach((order, index) => {
@@ -307,20 +411,18 @@ const generateInvoiceWithPDFKit = async (orders) => {
 
     // Add Total
     const total = orders.reduce((sum, order) => sum + order.quantity * order.price, 0);
-    doc.moveDown().fontSize(14).text(`Grand Total: $${total.toFixed(2)}`, { align: "right" });
+    doc.fontSize(14).text(`Grand Total: $${total.toFixed(2)}`, { align: "right" });
 
-    // Finalize the PDF and save
+    // Finalize the PDF
     doc.end();
 
-    writeStream.on("finish", () => {
-      resolve(filePath);
-    });
-
-    writeStream.on("error", (err) => {
-      reject(err);
-    });
+    // Ensure the file is fully written before resolving
+    writeStream.on("finish", () => resolve(filePath));
+    writeStream.on("error", (err) => reject(err));
   });
 };
+
+
 
 
 
