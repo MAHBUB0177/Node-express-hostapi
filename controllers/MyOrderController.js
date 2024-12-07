@@ -13,7 +13,7 @@ const path = require("path");
 
 const Stripe = require('stripe');
 const { transporter } = require("../helper/emailConfig");
-const { generateMailOptions } = require("../helper/emailOptions");
+const { generateMailOptions, generateMailOptionsForInvoice } = require("../helper/emailOptions");
 const stripe = Stripe(process.env.STRIPE_API_URL);
 
 const createMyOrder = async (req, res) => {
@@ -345,15 +345,30 @@ const confirmMyOrder = async (req, res) => {
 
       return newOrder.save();
     });
-
+  // Wait for all promises to resolve (all orders to be saved)
     const savedOrders = await Promise.all(orderPromises);
-
     // Generate Invoice PDF
-    const pdfPath = await generateInvoiceWithPDFKit(savedOrders);
-
-    // Send Email with the Invoice PDF
+    let orderInfo = {
+      orderId: "Z4B11D1730718627300",
+      orderDate: "04 Nov 2024, 05:21 PM",
+      deliveryDate: "04 Nov 2024, 06:18 PM",
+      restaurantName: "Burger Xpress - Banani",
+      restaurantPhone: "01601979711",
+      restaurantAddress: "House-33, (4th floor), Road-17, Block-E, Banani, Dhaka-1213",
+      customerName: "Rakibul Hasan",
+      customerPhone: "01777871569",
+      customerAddress: "97 Sohrawardy Ave, Dhaka 1212, Bangladesh",
+      vat: 207,
+      deliveryCharge: 45,
+      discount: 100,
+      restaurantInstruction: "N/A",
+      riderInstruction: "N/A",
+    };
+    
+    const pdfPath = await generateInvoiceWithPDFKit(savedOrders,orderInfo);
+    // Send Email with the Invoice PDF 
     transporter.sendMail(
-      generateMailOptions(
+      generateMailOptionsForInvoice(
         "mahbub15-9283@diu.edu.bd",
         "Your Order Invoice",
         "Thank you for your order! Please find your invoice attached.",
@@ -367,7 +382,7 @@ const confirmMyOrder = async (req, res) => {
           console.log("Email sent successfully:", info.response);
         }
 
-        // Cleanup: Remove the generated PDF
+        // Cleanup: Remove the generated PDF (avoid crashing the server if the file is missing.)
         fs.unlink(pdfPath, (err) => {
           if (err) console.error("Failed to delete PDF file:", err);
         });
@@ -388,35 +403,111 @@ const confirmMyOrder = async (req, res) => {
   }
 };
 
-const generateInvoiceWithPDFKit = async (orders) => {
+const generateInvoiceWithPDFKit = async (orderDetails,orderInfo) => {
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument();
+    const doc = new PDFDocument({ margin: 40 });
     const filePath = path.join(os.tmpdir(), `invoice_${Date.now()}.pdf`);
     const writeStream = fs.createWriteStream(filePath);
 
     doc.pipe(writeStream);
 
-    // Add Header
-    doc.fontSize(18).text("Invoice", { align: "center" }).moveDown();
+    // Header Section
+    doc
+      .fontSize(20)
+      .text("INVOICE", { align: "center" })
+      .moveDown(1);
 
-    // Add Order Details
-    orders.forEach((order, index) => {
+      //     // Order Details
+    doc
+      .fontSize(12)
+      .text(`Order Id: ${orderInfo.orderId}`)
+      .text(`Order date: ${orderInfo.orderDate}`)
+      .text(`Delivery date: ${orderInfo.deliveryDate}`)
+      .moveDown(1);
+
+      //     // Customer Info: Order From
+    doc
+      .fontSize(12)
+      .text("Order from:")
+      .fontSize(10)
+      .text(`Name: ${orderInfo.restaurantName}`)
+      .text(`Phone: ${orderInfo.restaurantPhone}`)
+      .text(`Address: ${orderInfo.restaurantAddress}`)
+      .moveDown(1);
+    // Customer Info Section
+    const firstOrder = orderDetails[0];
+    doc
+    .fontSize(12)
+    .text("Order from:")
+    .fontSize(10)
+    .text(`Customer Name: ${firstOrder.name}`)
+    .text(`Email: ${firstOrder.email}`)
+    .text(`Shipping Name: ${firstOrder.shippingUserName}`)
+    .text(`Shipping Phone: ${firstOrder.shippingPhone}`)
+    .text(`Shipping Address: ${firstOrder.shippingHouseNo}, ${firstOrder.shippingCity}`)
+    .moveDown(1);
+
+     
+
+    // Items Table Header
+    const tableStartY = doc.y;
+    doc
+      .fontSize(14)
+      .text(`#`, 50, tableStartY)
+      .text(`Items`, 80, tableStartY)
+      .text(`Quantity`, 300, tableStartY, { align: "" })
+      .text(`Unit Price`, 400, tableStartY, { align: "" })
+      .text(`Total`, 500, tableStartY, { align: "" });
+
+    doc.moveTo(50, tableStartY + 15) // Draw a line under the headers
+      .lineTo(550, tableStartY + 15)
+      .stroke();
+
+    // Items Table Content
+    let grandTotal = 0;
+    let currentY = tableStartY + 20; // Start the first row below the header
+    orderDetails.forEach((order, index) => {
+      const rowHeight = 20; // Height of each row
+
+      // Calculate values
+      const total = order.quantity * order.price;
+      grandTotal += total;
+
+      // Draw row content
       doc
         .fontSize(12)
-        .text(
-          `${index + 1}. ${order.productName} - ${order.quantity} x ${order.price} = ${order.quantity * order.price}`
-        )
-        .moveDown(0.5);
+        .text(index + 1, 50, currentY)
+        .text(order.productName, 80, currentY)
+        .text(order.quantity, 300, currentY, { align: "" })
+        .text(order.price.toFixed(2), 400, currentY, { align: "" })
+        .text(total.toFixed(2), 500, currentY, { align: "" });
+
+      currentY += rowHeight; // Move to the next row
     });
 
-    // Add Total
-    const total = orders.reduce((sum, order) => sum + order.quantity * order.price, 0);
-    doc.fontSize(14).text(`Grand Total: $${total.toFixed(2)}`, { align: "right" });
+    // Draw a line before the summary
+    doc
+      .moveTo(50, currentY + 10)
+      .lineTo(550, currentY + 10)
+      .stroke();
+
+    // Summary Section
+    const shippingFee = firstOrder.shippingFee;
+    const overallTotal = grandTotal + shippingFee;
+
+    doc
+      .fontSize(12)
+      .text(`Subtotal:`, 400, currentY + 20, { align: "" })
+      .text(grandTotal.toFixed(2), 500, currentY + 20, { align: "" })
+      .text(`Shipping Fee:`, 400, currentY + 40, { align: "" })
+      .text(shippingFee.toFixed(2), 500, currentY + 40, { align: "" })
+      .fontSize(14)
+      .text(`Grand Total:`, 400, currentY + 60, { align: "" })
+      .text(overallTotal.toFixed(2), 500, currentY + 60, { align: "" });
 
     // Finalize the PDF
     doc.end();
 
-    // Ensure the file is fully written before resolving
     writeStream.on("finish", () => resolve(filePath));
     writeStream.on("error", (err) => reject(err));
   });
