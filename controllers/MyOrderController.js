@@ -312,6 +312,7 @@ const createMyOrder = async (req, res) => {
 // Helper: Generate Invoice PDF with PDFKit
 
 const confirmMyOrder = async (req, res) => {
+  // await ConfirmOrder.deleteMany({});
   try {
     const ordersArray = req.body;
     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
@@ -322,8 +323,8 @@ const confirmMyOrder = async (req, res) => {
     }
 
     const orderPromises = ordersArray.map(async (orderItem) => {
-      const { brand, category, price, oldprice, productName, qnty, color, userId, name, email, shippingFee, grandTotal, shippingUserName, shippingPhone, shippingHouseNo, shippingCity } = orderItem;
-
+      const { brand, category, price, oldprice, productName, qnty, color, userId, name, email, shippingUserName, shippingPhone, shippingHouseNo, shippingCity } = orderItem;
+     
       const newOrder = new ConfirmOrder({
         brand,
         category,
@@ -335,8 +336,8 @@ const confirmMyOrder = async (req, res) => {
         userId,
         name,
         email,
-        shippingFee,
-        grandTotal,
+        shippingFee:qnty*30,
+        grandTotal:price*qnty,
         shippingUserName,
         shippingPhone,
         shippingHouseNo,
@@ -479,8 +480,8 @@ const generateInvoiceWithPDFKit = async (orderDetails,orderInfo) => {
         .text(index + 1, 50, currentY)
         .text(order.productName, 80, currentY)
         .text(order.quantity, 300, currentY, { align: "" })
-        .text(order.price.toFixed(2), 400, currentY, { align: "" })
-        .text(total.toFixed(2), 500, currentY, { align: "" });
+        .text(order?.price?.toFixed(2), 400, currentY, { align: "" })
+        .text(total?.toFixed(2), 500, currentY, { align: "" });
 
       currentY += rowHeight; // Move to the next row
     });
@@ -498,12 +499,12 @@ const generateInvoiceWithPDFKit = async (orderDetails,orderInfo) => {
     doc
       .fontSize(12)
       .text(`Subtotal:`, 400, currentY + 20, { align: "" })
-      .text(grandTotal.toFixed(2), 500, currentY + 20, { align: "" })
+      .text(grandTotal?.toFixed(2), 500, currentY + 20, { align: "" })
       .text(`Shipping Fee:`, 400, currentY + 40, { align: "" })
-      .text(shippingFee.toFixed(2), 500, currentY + 40, { align: "" })
+      .text(shippingFee?.toFixed(2), 500, currentY + 40, { align: "" })
       .fontSize(14)
       .text(`Grand Total:`, 400, currentY + 60, { align: "" })
-      .text(overallTotal.toFixed(2), 500, currentY + 60, { align: "" });
+      .text(overallTotal?.toFixed(2), 500, currentY + 60, { align: "" });
 
     // Finalize the PDF
     doc.end();
