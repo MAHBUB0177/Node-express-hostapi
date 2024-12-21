@@ -9,6 +9,7 @@ const products_routes = require('./routes/products')
 const items_routes=require('./routes/items')
 const user_routes = require('./routes/user')
 const order_route =require('./routes/orders')
+const contact_route =require('./routes/contact')
 // const order_route = require('/routes/orders')
 const client = require('./helper/init_redis');
 
@@ -26,6 +27,7 @@ app.use('/api/bgimage',background_routes)
 app.use('/api/products',products_routes)
 app.use('/api/items',items_routes)
 app.use('/api/cart',order_route)
+app.use('/api/contact',contact_route)
 //authentication routes
 app.use('/api/user',user_routes)
 const start=async() =>{
