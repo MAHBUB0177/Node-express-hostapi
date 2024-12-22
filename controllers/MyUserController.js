@@ -224,6 +224,48 @@ const updateUser = async (req, res) => {
   }
 };
 
+const resetPassword = async (req, res) => {
+  const userId = req.user.userId; // Extract user ID from the token
+  const { oldPassword, Password } = req.body; // Extract passwords from the request body
+console.log(req.body,'===========req.body')
+  try {
+    // Find the user by ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ isSuccess: false, message: "User not found" });
+    }
+
+    // Check if the old password matches the stored password
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ isSuccess: false, message: "Old password is incorrect" });
+    }
+
+    // Hash the new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(Password, salt);
+
+    // Update the user's password
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      isSuccess: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      isSuccess: false,
+      error: error.message,
+      message: "Failed to reset password",
+    });
+  }
+};
+
 const deleteUser = async (req, res) => {
   try {
     let { id } = req.params;
@@ -271,4 +313,5 @@ module.exports = {
   updateUser,
   deleteUser,
   currentuserInfo,
+  resetPassword
 };
