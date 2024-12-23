@@ -50,6 +50,7 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body,'req.body=========')
 
   if (!email || !password) {
     return res.status(400).json({ isSuccess: false, message: "Missing fields" });
@@ -66,6 +67,7 @@ const loginUser = async (req, res) => {
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
       return res.status(401).json({
         isSuccess: false,
@@ -227,7 +229,6 @@ const updateUser = async (req, res) => {
 const resetPassword = async (req, res) => {
   const userId = req.user.userId; // Extract user ID from the token
   const { oldPassword, Password } = req.body; // Extract passwords from the request body
-console.log(req.body,'===========req.body')
   try {
     // Find the user by ID
     const user = await User.findById(userId);
@@ -236,7 +237,6 @@ console.log(req.body,'===========req.body')
         .status(404)
         .json({ isSuccess: false, message: "User not found" });
     }
-
     // Check if the old password matches the stored password
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
@@ -244,15 +244,8 @@ console.log(req.body,'===========req.body')
         .status(400)
         .json({ isSuccess: false, message: "Old password is incorrect" });
     }
-
-    // Hash the new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(Password, salt);
-
-    // Update the user's password
-    user.password = hashedPassword;
+    user.password = Password;
     await user.save();
-
     res.status(200).json({
       isSuccess: true,
       message: "Password reset successfully",
