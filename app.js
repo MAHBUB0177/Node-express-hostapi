@@ -10,7 +10,6 @@ const items_routes=require('./routes/items')
 const user_routes = require('./routes/user')
 const order_route =require('./routes/orders')
 const contact_route =require('./routes/contact')
-// const order_route = require('/routes/orders')
 const client = require('./helper/init_redis');
 
 app.use(morgan('dev'))
