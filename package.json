@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+    "engines": {
+      "node": ">=14.0.0"
+    },
   "scripts": {
     "rediscli": "node ./node_modules/redis-cli/index.js",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "build": "npm rebuild bcrypt --build-from-source"
   },
   "keywords": [],
   "author": "",
