@@ -2,11 +2,11 @@
   "name": "restapi",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "rediscli": "node ./node_modules/redis-cli/app.js",
-    "start": "node app.js",
-    "dev": "nodemon app.js"
+    "rediscli": "node ./node_modules/redis-cli/index.js",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
