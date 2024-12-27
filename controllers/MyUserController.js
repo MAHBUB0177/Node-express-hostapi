@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
+const bcrypt = require('bcryptjs');
 const client = require("../helper/init_redis");
 const user = require("../models/user");
 const { generateMailOptions } = require("../helper/emailOptions");
