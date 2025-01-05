@@ -541,8 +541,8 @@ const confirmMyPayment = async (req, res) => {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: 'http://localhost:3000/success',
-      cancel_url: 'http://localhost:3000/cancel',
+      success_url: 'https://fullstack-ecom-ashy.vercel.app/success',
+      cancel_url: 'https://fullstack-ecom-ashy.vercel.app/cancel',
     });
 
     res.json({ id: session.id });
