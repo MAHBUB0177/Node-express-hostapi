@@ -5,7 +5,6 @@ const router=express.Router()
 const { createMyOrder, createMyDivision, createMyCity, createMyArea, geatAllDivision, getCityByType, getAreaByType, confirmMyOrder, getOrderInfo, confirmMyPayment, getConfirmoredrInfoByUser } = require('../controllers/MyOrderController');
 const verifyToken = require('../middleware/auth');
 
-
 router.route('/orders').post(verifyToken,createMyOrder);
 router.route('/orders/fetch').get(verifyToken,getOrderInfo);
 router.route('/division').post(verifyToken,createMyDivision);
