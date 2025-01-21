@@ -323,7 +323,7 @@ const confirmMyOrder = async (req, res) => {
     }
 
     const orderPromises = ordersArray.map(async (orderItem) => {
-      const { brand, category, price, oldprice, productName, qnty, color, userId, name, email, shippingUserName, shippingPhone, shippingHouseNo, shippingCity } = orderItem;
+      const { brand, category, price, oldprice, productName, qnty, color, userId, name, email, shippingUserName, shippingPhone, shippingHouseNo, shippingCity,image,rating } = orderItem;
      
       const newOrder = new ConfirmOrder({
         brand,
@@ -342,6 +342,8 @@ const confirmMyOrder = async (req, res) => {
         shippingPhone,
         shippingHouseNo,
         shippingCity,
+        image,
+        rating,
       });
 
       return newOrder.save();
@@ -514,10 +516,6 @@ const generateInvoiceWithPDFKit = async (orderDetails,orderInfo) => {
   });
 };
 
-
-
-
-
 const confirmMyPayment = async (req, res) => {
   const { payload } = req.body;
 
@@ -553,6 +551,23 @@ const confirmMyPayment = async (req, res) => {
 };
 
 
+const getConfirmoredrInfoByUser =async (req, res, ) => {
+  try {
+    const { userId } = req.user;
+    if (!userId) {
+      return res.status(400).json({ message: "invalid credential or Something went wrong", isSuccess: false });
+    }
+
+    let appData = ConfirmOrder.find({ userId });
+    const totalRecord = await ConfirmOrder.countDocuments({ userId });
+    const item = await appData;
+
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+  }
+}
+
 
   module.exports = { createMyOrder, 
     createMyDivision,
@@ -563,5 +578,6 @@ const confirmMyPayment = async (req, res) => {
     getAreaByType,
     confirmMyOrder,
     getOrderInfo,
-    confirmMyPayment
+    confirmMyPayment,
+    getConfirmoredrInfoByUser
     };

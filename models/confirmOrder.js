@@ -64,6 +64,11 @@ const confirmOrderSchema=new mongoose.Schema({
         type:String,
         required:true
     },
+    image: [{ type: String }], 
+    rating:{
+        type:Number,
+        default:5.9
+    },
 
 
 
