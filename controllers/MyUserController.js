@@ -237,12 +237,6 @@ const createMyProfileImage = async (req, res) => {
       }
       // Upload the single image and get the URL
       const imageUrl = await uploadSingleImage(req.file);
-
-      console.log(imageUrl,'imageUrl=========')
-      // // Create the background image record in the database
-      // const bgImage = new Bgimage({ ...req.body, image: imageUrl });
-      // await bgImage.save();
-
       res.status(201).json({ isSuccess: true, message: "Image added successfully", image: imageUrl });
   } catch (error) {
       console.error("Error creating background image:", error);
