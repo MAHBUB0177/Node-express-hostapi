@@ -220,100 +220,8 @@ const createMyOrder = async (req, res) => {
 
 
 
-// const confirmMyOrder = async (req, res) => {
-//   try {
-//     // Check if the request body is an array
-//     const ordersArray = req.body;
-//     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
-//       return res.status(400).json({
-//         isSuccess: false,
-//         message: "Request body should contain an array of order details.",
-//       });
-//     }
-
-
-//     // Loop through the array and save each order separately
-//     const orderPromises = ordersArray.map(async (orderItem) => {
-//       // Destructure the required fields from each order object
-//       const { brand, category, price, oldprice, productName, qnty, color,userId,name,email,shippingFee,grandTotal,shippingUserName,shippingPhone,shippingHouseNo,shippingCity } = orderItem;
-//       // Create a new order
-//       const newOrder = new ConfirmOrder({
-//         brand,
-//         category,
-//         price,
-//         oldprice,
-//         productName,
-//         quantity: qnty, // Storing `qnty` as `quantity` in the model
-//         color,
-//         userId,
-//         name,
-//         email,
-//         shippingFee,
-//         grandTotal,
-//         shippingUserName,
-//         shippingPhone,
-//         shippingHouseNo,
-//         shippingCity,
-//       });
-
-//       // Save the new order to the database
-//       return newOrder.save(); 
-//     });
-
-//     // Wait for all promises to resolve (all orders to be saved)
-//     // await Promise.all(orderPromises);//previous
-//     const savedOrders = await Promise.all(orderPromises);
-
-//     // Generate Invoice PDF
-//     const pdfPath = await generateInvoiceWithPDFKit(savedOrders);
-//   // Send Email with the Invoice PDF
-//     // await sendEmailWithInvoice(pdfPath, ordersArray[0].email);
-
-//      // Send Email with the Invoice PDF
-//    await  transporter.sendMail(
-//       generateMailOptions(
-//         "mahbub15-9283@diu.edu.bd", // Customer email
-//         "Your Order Invoice",
-//         "Thank you for your order! Please find your invoice attached.",
-//         null, // No custom HTML content
-//         pdfPath
-//       ),
-//       (error, info) => {
-//         if (error) {
-//           console.error("Error occurred while sending email:", error);
-//         } else {
-//           console.log("Email sent successfully:", info.response);
-//         }
-//       }
-//     );
-
-   
-
-//       // Cleanup: Remove the generated PDF
-//       fs.unlink(pdfPath, (err) => {
-//         if (err) console.error("Failed to delete PDF file:", err);
-//       });
-  
-//     // Return success response
-//     res.status(201).json({
-//       isSuccess: true,
-//       message: "Orders confirmed successfully and invoice sent via email.",
-//     });
-//   } catch (error) {
-//     console.error("Error creating order:", error);
-//     res.status(500).json({
-//       isSuccess: false,
-//       error: error.message,
-//       message: "Something went wrong",
-//     });
-//   }
-// };
-
-
-// Helper: Generate Invoice PDF with PDFKit
 
 const confirmMyOrder = async (req, res) => {
-  // await ConfirmOrder.deleteMany({});
   try {
     const ordersArray = req.body;
     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
@@ -408,10 +316,8 @@ const confirmMyOrder = async (req, res) => {
 };
 
 const cancelMyOrder = async (req, res) => {
-  // await ConfirmOrder.deleteMany({});
   try {
     const ordersArray = req.body;
-    console.log(ordersArray,'ordersArray=============')
     if (!Array.isArray(ordersArray) || ordersArray.length === 0) {
       return res.status(400).json({
         isSuccess: false,
@@ -647,6 +553,23 @@ const getConfirmoredrInfoByUser =async (req, res, ) => {
 }
 
 
+const getCancelOredrInfoByUser =async (req, res, ) => {
+  try {
+    const { userId } = req.user;
+    if (!userId) {
+      return res.status(400).json({ message: "invalid credential or Something went wrong", isSuccess: false });
+    }
+
+    let appData = cancelOrder.find({ userId });
+    const totalRecord = await cancelOrder.countDocuments({ userId });
+    const item = await appData;
+
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
+  }
+}
+
   module.exports = { createMyOrder, 
     createMyDivision,
     createMyCity,
@@ -658,5 +581,6 @@ const getConfirmoredrInfoByUser =async (req, res, ) => {
     getOrderInfo,
     confirmMyPayment,
     getConfirmoredrInfoByUser,
-    cancelMyOrder
+    cancelMyOrder,
+    getCancelOredrInfoByUser
     };
