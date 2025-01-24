@@ -556,7 +556,6 @@ const getConfirmoredrInfoByUser =async (req, res, ) => {
 const getCancelOredrInfoByUser =async (req, res, ) => {
   try {
     const { userId } = req.user;
-    console.log(userId,'userId============')
     if (!userId) {
       return res.status(400).json({ message: "invalid credential or Something went wrong", isSuccess: false });
     }
