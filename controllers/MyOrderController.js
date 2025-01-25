@@ -543,10 +543,20 @@ const getConfirmoredrInfoByUser =async (req, res, ) => {
     }
 
     let appData = ConfirmOrder.find({ userId });
-    const totalRecord = await ConfirmOrder.countDocuments({ userId });
-    const item = await appData;
+    // const totalRecord = await ConfirmOrder.countDocuments({ userId });
+    // const item = await appData;
 
-    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+     // Pagination
+     let page = Number(req.query.page) || 1;
+     let limit = Number(req.query.limit) || 10;
+     let skip = (page - 1) * limit;
+     appData = appData.skip(skip).limit(limit);
+ 
+     const totalRecord = await ConfirmOrder.countDocuments({ userId });
+     const totalPage = Math.ceil(totalRecord / limit);
+     const item = await appData;
+
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true,totalPage:totalPage });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
   }
@@ -561,10 +571,20 @@ const getCancelOredrInfoByUser =async (req, res, ) => {
     }
 
     let appData = cancelOrder.find({ userId });
+   
+
+
+    // Pagination
+    let page = Number(req.query.page) || 1;
+    let limit = Number(req.query.limit) || 10;
+    let skip = (page - 1) * limit;
+    appData = appData.skip(skip).limit(limit);
+
     const totalRecord = await cancelOrder.countDocuments({ userId });
+    const totalPage = Math.ceil(totalRecord / limit);
     const item = await appData;
 
-    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true });
+    res.status(200).json({ item, totalRecords: totalRecord, isSuccess: true,totalPage:totalPage });
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message, isSuccess: false });
   }
