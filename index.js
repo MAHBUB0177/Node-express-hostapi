@@ -10,6 +10,7 @@ const items_routes=require('./routes/items')
 const user_routes = require('./routes/user')
 const order_route =require('./routes/orders')
 const contact_route =require('./routes/contact')
+const review_route =require('./routes/review')
 const client = require('./helper/init_redis');
 
 app.use(morgan('dev'))
@@ -27,6 +28,7 @@ app.use('/api/products',products_routes)
 app.use('/api/items',items_routes)
 app.use('/api/cart',order_route)
 app.use('/api/contact',contact_route)
+app.use('/api/review',review_route)
 //authentication routes
 app.use('/api/user',user_routes)
 const start=async() =>{
