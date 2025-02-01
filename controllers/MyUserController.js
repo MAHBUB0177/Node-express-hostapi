@@ -77,7 +77,6 @@ const loginUser = async (req, res) => {
         error: "Authentication failed",
       });
     }
-
     // Calculate token expiration times
     const accessTokenExpirationTime = 20; // Access token lifespan in minutes
     const refreshTokenExpirationTime = 5 * 60; // Refresh token lifespan in minutes (5 hours = 300 minutes)
