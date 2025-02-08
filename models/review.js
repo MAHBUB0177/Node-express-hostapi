@@ -22,6 +22,9 @@ const reviewSchema=new mongoose.Schema({
     productId:{
         type:String,
     }, 
+    userId:{
+        type:String,
+    }
 
 })
 
