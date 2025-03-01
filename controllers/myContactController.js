@@ -22,7 +22,7 @@ const CreateMyContact= async (req, res) => {
     } catch (error) {
       // Handle duplicate email errors or validation errors
       if (error.code === 11000) {
-        res.status(400).json({ error: 'Email must be unique' });
+        res.status(400).json({error: error.message ,isSuccess:false, message: 'Email must be unique'});
       } else {
         res.status(500).json({ error: error.message });
       }
